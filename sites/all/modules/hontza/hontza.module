@@ -1,0 +1,1077 @@
+<?php  // $Id: hontza.module,v 1.0 2010/10/12 00:15:21 karlosgliberal Exp $
+
+/**
+ * @file
+ * First module on hontza distribution
+ */
+
+//TODO problem in conversion hontza to distribute whith role. in this module the contro is create 
+//whith de role id, and in profile installation role ide generate is diferent.
+define('ANONIMO',  _role_id('anonymous user'));
+define('AUTHENTICATED', _role_id('authenticated user'));
+define('ADMINISTRADOR', _role_id('Administrador'));
+define('CREADOR', _role_id('Creador de grupos'));
+
+/**
+ * Implements hook_perm().
+ */
+function hontza_perm() {
+  return array(
+    'Gestion fuentes publicas',
+    'Ver estadisticas canales',
+    'Ver estadisticas etiquetas',
+  );
+}
+
+/**
+ * Implementation of hook_menu
+ */
+function hontza_menu() {
+  $items = array();
+  $items['crear/fuente-supercanal'] = array(
+    'title' => t('Añadir una fuente Pipe'),
+    'page callback' => 'supercanal_wizard',
+    'access arguments' => array('create supercanal content'),
+    'file' => 'wizards/supercanal.wizard.inc',
+  );
+  $items['crear/fuente-dapper'] = array(
+    'title' => t('Añadir una fuente Dapper'),
+    'page callback' => 'fuentedapper_wizard',
+    'access arguments' => array('create supercanal content'),
+    'file' => 'wizards/fuentedapper.wizard.inc',
+  );
+  $items['crear/canal-supercanal'] = array(
+    'title' => t('Crear un canal supercanal'),
+    'page callback' => 'canal_wizard',
+    'access arguments' => array('create canal_de_supercanal content'),
+    'file' => 'wizards/canal.wizard.inc',
+  );
+  $items['crear/canal-yql'] = array(
+    'title' => t('Crear un canal con multiples RSS'),
+    'page callback' => 'yql_wizard',
+    'access arguments' => array('create canal_de_yql content'),
+    'file' => 'wizards/yql.wizard.inc',
+  );
+
+  //Canales con estadisticas....
+  $items['estadisticas/canales/%'] = array(
+    'page callback' => 'estadisticas_modal_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver estadisticas canales'),
+  );
+  $items['estadisticas'] = array(
+    'title' => 'Listado de canales del grupo',
+    'page callback' => 'drupal_get_form',    
+    'page arguments'   => array('lista_canales_estadisticas', 2),
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'access arguments' => array('Ver estadisticas canales'),
+  );
+    //Panel de gestion fuentes publicas
+  $items['gestion/publicar'] = array(
+    'title' => 'Publicar fuentes',
+    'page callback' => 'drupal_get_form',    
+    'page arguments'   => array('publicar_fuentes_form', 2),
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'access arguments' => array('Gestion fuentes publicas'),
+  );
+  $items['gestion/lista-publicas'] = array(
+    'title' => 'Listado de fuentes publicas',
+    'page callback' => 'drupal_get_form',    
+    'page arguments'   => array('fuentes_publicas_form', 2),
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'access arguments' => array('Gestion fuentes publicas'),
+  );
+  
+  //Etiquetas con estadisticas....
+  $items['stat/etiquetas/%'] = array(
+    'page callback' => 'estadisticas_etiquetas_modal_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('Ver estadisticas etiquetas'),
+  );
+  $items['stat/etiquetas'] = array(
+    'title' => 'Etiquetas mas utilizadas',
+    'page callback' => 'drupal_get_form',    
+    'page arguments'   => array('lista_etiquetas_estadisticas', 2),
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'access arguments' => array('Ver estadisticas etiquetas'),
+  );
+  $items['stat/item'] = array(
+    'title' => 'Contenidos validaddos',
+    'page callback' => 'drupal_get_form',    
+    'page arguments'   => array('lista_items_validados', 2),
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'access arguments' => array('Ver estadisticas validadas'),
+  );
+  
+  return $items;
+}
+
+
+/**
+ * Implements hook_init().
+ */
+function hontza_init() {
+ drupal_add_js(drupal_get_path('module', 'hontza') .'/hontza.js', 'module');
+}
+
+
+/**
+ * Implements hook_nodeapi().
+ */
+function hontza_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'insert':
+      //Cambiar el atributo og_public a FALSE para las noticias
+      global $user;
+      if ($node->type == 'noticia' and $user->roles[ADMINISTRADOR] and $user->roles[CREADOR] ) {
+        $node->og_public = 'FALSE';
+      }
+      break;
+    
+    case 'presave':
+      if ($node->type == 'item') {
+        $madre = node_load($node->feeds_node_item->feed_nid);
+        $node->og_groups = $madre->og_groups;
+        if ($madre->type == 'canal_de_supercanal' or $madre->type == 'canal_de_yql') {
+          $node->field_item_canal_reference[0]['nid'] = $madre->nid;
+        }
+      }
+    break;
+    
+    case 'delete':
+      if ($node->type == 'canal_de_supercanal') {
+        $items = db_query("SELECT nid FROM {feeds_node_item} WHERE feed_nid = %d", $node->nid);
+        while ($item_nid = db_result($items)) {
+          node_delete($item_nid);
+        }
+      }
+      if ($node->type == 'canal_de_yql') {
+        $items = db_query("SELECT nid FROM {feeds_node_item} WHERE feed_nid = %d", $node->nid);
+        while ($item_nid = db_result($items)) {
+          node_delete($item_nid);
+        }
+      }
+      
+   //Redirigir url cuando se elimina contenido
+      if(og_get_group_context()->purl) {
+        drupal_goto(og_get_group_context()->purl .'/dashboard');
+      }
+      else {
+        drupal_goto('node');
+      }
+      
+    break;
+    case 'load':
+    break;
+  }
+}
+
+/**
+ *Implementation of hook_form_alter
+ */
+function hontza_form_alter(&$form, &$form_state, $form_id) {
+  /**
+   *Realizar relacion entre item-noticia -> debate o trabajo mediante un enlace
+   */
+  //Debate
+  if ($form_id == 'debate_node_form') {
+    $arguments = explode('/', $_GET['q']);
+    $nodo=node_load($arguments[3]);
+    global $base_url;
+    $form['field_enlace_debate'][0]['#default_value']['title']=$nodo->title;
+    $form['field_enlace_debate'][0]['#default_value']['url']=$base_url . '/node/' . $arguments[3];
+  }
+  //Trabajo
+  if ($form_id == 'wiki_node_form') {
+    $arguments = explode('/', $_GET['q']);
+    $nodo=node_load($arguments[3]);
+    global $base_url;
+    $form['field_enlace_wiki'][0]['#default_value']['title']=$nodo->title;
+    $form['field_enlace_wiki'][0]['#default_value']['url']=$base_url .'/node/'. $arguments[3];
+  }
+  
+  //Ocultar campo de publicar en todos los grupos los canales
+  global $user;
+  if ($user->uid != 1) {
+    if (!$user->roles[ADMINISTRADOR] AND ($form_id == 'canal_de_yql_node_form' OR $form_id == 'supercanal_node_form' OR $form_id == 'fuentedapper_node_form')) {
+    unset($form['field_tematica_gupos']);
+    }
+  }
+  
+  //Ocultar campo de Advanced options al añadir un termino
+  if ($url[0] == 'admin' AND $url[1] == 'content' AND $url[2]== 'taxonomy' AND $url[3] AND $url[4]== 'add' AND $url[5]== 'term' AND $user->uid!=1) {
+    unset($form['advanced']);
+    
+  }
+  if ($form_id == 'user_register') {
+    $form['Empresa']['responsable'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Correo del responsable'),
+      '#maxlength' => 255,
+      '#description' =>  t('Dirección de correo electrónico del responsable que será notificado.'),
+      '#required' => 1,
+    );
+    $form['#validate'][] = 'hontza_responsable_validate';
+  }
+  
+  //Ocultar los 4 ultimos campos de todos los tipos de contenido
+   if ( $user->uid != 1 and ($form_id == 'wiki_node_form' or $form_id == 'canal_de_yql_node_form' or
+                             $form_id == 'supercanal_node_form' or $form_id == 'fuentedapper_node_form' or
+                             $form_id == 'debate_node_form' or $form_id == 'canal_busqueda_node_form' or
+                             $form_id == 'canal_de_supercanal_node_form' or $form_id == 'canal_de_yql_node_form' or
+                             $form_id == 'debate_node_form' or $form_id == 'servicio_node_form' or
+                             $form_id == 'faq_node_form' or $form_id == 'grupo_node_form' or
+                             $form_id == 'item_node_form' or $form_id == 'noticia_node_form'or
+                             $form_id == 'noticias_portada_node_form' or $form_id == 'page_node_form')) {
+    
+    //Campos genericos
+    unset($form['revision_information']);
+    unset($form['flag']);
+    unset($form['comment_settings']);
+    unset($form['path']);
+    unset($form['author']);
+    unset($form['options']);
+    
+    //Campos de algunos contenidos
+    unset($form['field_tematica_gupos']);
+    unset($form['menu']);
+    unset($form['attachments']);
+   }
+  
+}
+
+function hontza_responsable_validate($form, &$form_state) {
+  $mail = $form_state['values']['responsable'];
+  
+  $uid = db_result(db_query("SELECT uid FROM {users} WHERE mail LIKE '%s'", $mail));
+  if (!db_affected_rows()) {
+    form_set_error('responsable', t('El mail que has introducido no es correcto'));
+  }
+}
+
+/**
+ *Implementation of hook_user
+ *
+*/
+function hontza_user($op, &$edit, &$account, $category = NULL) {
+  if ($op == 'insert' AND isset($edit['responsable'])) {
+    $mail = $edit['responsable'];
+    $responsable = user_load(array('mail' => $mail));
+    $params['responsable'] = $responsable;
+    $params['user'] = $account;
+    drupal_mail('hontza', 'aviso-responsable', $mail, '', $params);
+  }
+}
+
+function get_grupos() {
+  global $user;
+  $result = db_query("SELECT n.nid, n.title FROM {node} n INNER JOIN {og_uid} ou ON n.nid = ou.nid WHERE ou.uid = %d", $user->uid);
+  $grupos = array();
+  while ($row = db_fetch_object($result)) {
+    $grupos[$row->nid] = $row->title;
+  }
+  return $grupos;
+}
+
+/***
+ * Window modal ctools
+ */
+function preview_test_modal_callback($js = FALSE) {
+  $nid = arg(3);
+  $filtro = arg(4);
+  $nodo = node_load($nid);
+  $pipe_id = explode('#', $nodo->field_pipe_args[0]['value']);
+  $output = $pipe_id[0];
+  $output .= $pipe_id[1];
+  $output .= $filtro;
+  $output .= t('<p>cosicas cosi</p>');
+  if ($js) {
+    ctools_include('ajax');
+    ctools_include('modal');
+    ctools_modal_render($title, $output);
+    // above command will exit().
+  }
+  else {
+    drupal_set_title($title);
+    return $output;
+  }
+}
+
+
+function generar_opml($nid) {
+  $items = array();
+  $node = node_load($nid);
+  if ($node->type == 'supercanal') {
+    foreach ($node->field_supercanal_fuente as $id => $fuente) {
+      $fuente = node_load($fuente['nid']);
+      $items[$id]['title'] = $fuente->title;
+      $items[$id]['text'] = $fuente->title;
+      $items[$id]['xmlurl'] = $fuente->field_tematica_url[0]['value'];
+    }
+  }
+  print get_opml($items, $node->title);
+}
+
+/**
+ * Generate a OPML file with diferents feeds.
+ * @param $items A array with the elements.
+ * @param $name The name of the OPML you want to generate.
+ */
+function get_opml($items, $name) {
+  $output = '<?xml version="1.0" encoding="UTF-8"?>';
+  $output .= '<opml version="1.0">';
+  $output .= '<head>';
+  $output .= "<title>$name</title>";
+  $output .= '</head>';
+  $output .= '<body>';
+  //We start with the loop to rescue all the elements in the $items array
+  foreach ($items as $item) {
+    $output .= '<outline text="'. $item['text'] .'" title="'. $item['title'] .'" type="rss" xmlUrl="'. $item['xmlurl'] .'"/>';   
+  }
+  $output .= '</body>';
+  $output .= '</opml>';
+  return $output;
+}
+
+/**
+ * Implementation of hook_views_pre_render().
+ */
+function hontza_views_pre_render(&$view) {
+  if ($view->display_handler->display->display_plugin === 'page') {
+    $input = $view->get_exposed_input();
+    if (!empty($input['search'])) {
+      drupal_set_title(check_plain($input['search']));
+    }
+  }
+}
+
+
+/**
+ * Implementation of hook_mail().
+ */
+function hontza_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'aviso-responsable':
+  $headers = array(
+        'MIME-Version' => '1.0',
+        'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
+        'Content-Transfer-Encoding' => '8Bit',
+        'X-Mailer' => 'Drupal'
+      );
+      foreach ($headers as $key => $value) {
+        $message['headers'][$key] = $value;
+      }
+      $message['subject'] .= t('Un nuevo registro');
+      $message['body'][] = t('Hola !nombre', array('!nombre' => $params['responsable']->name));
+      $message['body'][] = t('El usuario !nom se ha registrado en !sitio con el correo !mail', array('!nom' => $params['user']->name, '!sitio' => variable_get('site_name', ''), '!mail' => $params['user']->mail));
+      $message['body'][] = t('y te ha nombrado como responsable');
+    break;
+  }
+  
+}
+
+
+/**
+ * Implementation of hook_cron()
+ * 
+ */
+function hontza_cron() {
+}
+
+/**
+ * Implementación del hook_block
+ *
+ * Bloque de categorias del grupo
+ */
+function hontza_block($op = 'list', $delta = 0, $edit = array()) {
+  switch ($op) {
+    case 'list':
+      $blocks[0]['info'] = t('Categorias del canal');
+      $blocks[1]['info'] = t('Bloque para añadir usuarios al grupo.');
+      $blocks[2]['info'] = t('Menu general');
+      $blocks[3]['info'] = t('Menu general gestion');
+      $blocks[4]['info'] = t('Bloque para añadir fuentes (Admin)');
+      $blocks[5]['info'] = t('Bloque con el nombre del grupo');
+      $blocks[7]['info'] = t('Gestion FUENTES (Admin)');
+      $blocks[8]['info'] = t('Modificar categorías del grupo');
+      
+      $blocks[11]['info'] = t('Menu Añadir a Área de debate');
+      $blocks[12]['info'] = t('Menu Añadir canal');
+      $blocks[13]['info'] = t('Menu Añadir página a Área de trabajo');
+      $blocks[14]['info'] = t('Menu Búsquedas');
+      $blocks[15]['info'] = t('Menu Gestión ÁREA DE TRABAJO');
+      $blocks[16]['info'] = t('Menu Gestión AYUDA');
+      $blocks[17]['info'] = t('Menu Gestión CANALES');
+      $blocks[18]['info'] = t('Menu Gestión de NOTICIAS');
+      $blocks[19]['info'] = t('Menu Gestión DEBATE');
+      $blocks[20]['info'] = t('Menu Gestión ESTADÍSTICAS');
+      $blocks[21]['info'] = t('Menu Gestión GRUPOS');
+      $blocks[22]['info'] = t('Menu Gestión NOTICIAS DE USUARIO');
+      $blocks[23]['info'] = t('Menu Gestión NOTICIAS PÚBLICAS');
+      $blocks[24]['info'] = t('Menu Gestión SERVICIOS');
+      $blocks[25]['info'] = t('Menu Gestión USUARIOS');
+      $blocks[26]['info'] = t('Menu Mis contenidos'); 
+      $blocks[27]['info'] = t('Menu Noticias de usuarios');
+      $blocks[28]['info'] = t('Menu Ver fuentes');
+      $blocks[29]['info'] = t('Menu enlaces');
+      
+      return $blocks;
+    break;
+
+    case 'view':
+      switch ($delta) {
+        case 0:
+          global $user;
+          if ($user->uid) {
+          $block['subject']=t('Canales por categorias');    
+          if (og_get_group_context()) {
+            //Obtener el ID del grupo en el que se esta
+            $id_categoria = db_result(db_query("SELECT og.vid FROM {og_vocab} og WHERE  og.nid = '%s'", og_get_group_context()->nid));
+            
+            //Funcion del modulo taxonomy que dado un el id de una categoria devuelve todos los terminos de la misma
+            $categorias=taxonomy_get_tree($id_categoria);
+            
+            foreach ($categorias as $id => $contenido) {
+              profundidad($contenido->tid);
+              $pro=variable_get('profundidad_valor', 0);
+              
+              //Consulta para obtener el numero de items de cada categoria
+              $num_items = db_result(db_query("SELECT COUNT(DISTINCT(node.nid)) AS num_records
+                                              FROM node node LEFT JOIN {term_node term_node} ON node.vid = term_node.vid
+                                              LEFT JOIN {term_data} term_data ON term_node.tid = term_data.tid
+                                              WHERE (node.type in ('canal_busqueda', 'canal_de_supercanal', 'canal_de_yql')) AND term_data.vid=%d AND term_data.tid=%d
+                                              GROUP BY term_data.name", $id_categoria, $contenido->tid));
+              
+              //Es padre 
+              if (_taxonomy_term_children($contenido->tid)) {
+                if ($num_items) {
+                  $salida .='<li class=nivel' . $pro .'>'. l($contenido->name .' ('. $num_items .')', 'canales/categorias/'. $contenido->tid) .'</li>';  
+                }
+                elseif (hijoscontieneitems($contenido->tid, $id_categoria)) {
+                  $salida .='<li class=nivel'. $pro .'>'. $contenido->name .'</li>';
+                }
+              }
+              //Es hoja (final)
+              else{
+                if ($num_items!=0) {
+                $salida .='<li class=nivel'. $pro .'>'. l($contenido->name .' ('. $num_items .')', 'canales/categorias/'. $contenido->tid) .'</li>';
+                }
+              }
+            }
+          }
+        }
+        $block['content'] = $salida;
+        break;
+  
+  case 1:
+  $block['subject'] = t('Añadir usuarios al grupo');
+  $block['content'] = hontza_add_users_block();
+        break;
+  
+  case 2:
+  
+  global $user;
+  //Menu usuario registrado
+  if ($user->roles[AUTHENTICATED]) {
+  $enlaces = '<li class="first"><a href="/user">Mi perfil</a></li>
+											<li class="first"><a href="/mis-contenidos">Mis contenidos</a></li>
+											<li class="first"><a href="/mis-grupos">Mis grupos</a></li>
+											<li class="first"><a href="/user/suscripciones">Mis suscripciones</a></li>
+											<li><a href="/faq">Ayuda</a></li>
+											<li class="last"><a href="/logout">Cerrar sesión</a></li>
+											<span style="padding: 4px; background-color: #E5E5E5; "><a href="/cron.php">Actualizar</a></span>'; 
+  }
+  //Menu usuario anónimo
+  elseif ($user->roles[ANONIMO]) {
+  $enlaces='<li ><a href="/user">Inicio de sesión / Login</a></li>';
+  }
+  
+  //$block['content'] = $enlaces;
+  $block['content'] = theme('hontza', $enlaces);
+
+        break;
+  
+  case 3:
+  global $user;
+  $links;
+  //Menu con el panel de gestion
+  if ($user->roles[ADMINISTRADOR] or $user->uid == 1) {
+  $links .= '<li><a href="/gestion">Panel de gestión</a></li>';
+  }
+          //Menu gestion grupos
+  if ($user->roles[CREADOR] or $user->uid == 1) {
+  
+  $links .='<li><a href="/user-gestion/grupos/propios">Gestión de grupos</a></li>';
+  }
+  $block['content'] = $links;
+        break;
+  //Menu añadir fuentes
+  case 4:
+  $block['subject'] = t('Añadir fuentes');
+  $block['content'] = hontza_add_fuentes_block();
+        break;
+  //Etiqueta grupo actual
+  case 5:
+  global $user;
+  if (og_get_group_context()->title and $user->uid) {
+  $block['content'] = l(og_get_group_context()->title, "dashboard");
+  }
+        break;
+      
+        case 7:
+  global $user;
+  $enlaces;
+  //Bloque con los enlaces de gestion de las views de fuentes
+  if ($user->roles[ADMINISTRADOR] or $user->uid == 1) {
+            $block['subject'] = t('Gestión FUENTES');
+            $block['content'] ='<a href="/gestion/publicar">&nbsp;&nbsp;Hacer públicas fuentes</a><br>
+                        <a href="/gestion/lista-publicas">&nbsp;&nbsp;Listado de fuentes públicas</a>';
+  }
+        break;
+        
+        //Modificar categorias del grupo
+  case 8:
+          global $user;
+  if ($user->roles[ADMINISTRADOR] or $user->uid == 1 or (og_get_group_context()->nid AND $user->uid)) {
+            $is_admin=db_result(db_query("SELECT o.is_admin FROM {og_uid} o  WHERE o.nid = %d and o.uid = %d",  og_get_group_context()->nid, $user->uid));
+            if ($is_admin == 1 or $user->uid == 1 or $user->roles[ADMINISTRADOR]) {
+              $enlace= "node/". og_get_group_context()->nid ."/og/vocab";
+              $block['subject'] = t('Gestion de categorías');
+              $block['content'] = '<a href="'. $enlace .'" TARGET="_blank">&nbsp;&nbsp;&nbsp;Modificar vocabulario</a>';
+            }
+          }
+        break;
+      
+        case 11:
+  $block['subject'] = t('Añadir a Área de debate');
+          $block['content'] =l(t('Crear hilo de debate'), 'node/add/debate');
+        break;
+        case 12:
+  $block['subject'] = t('Añadir canal');
+  $block['content'] =l(t('Crear Canal de una Fuente'), 'crear/canal-supercanal') .'<br>'. l(t('Crear Canal-Filtro de RSS'), 'crear/canal-yql');
+        break;
+        case 13:
+  $block['subject'] = t('Añadir página a Área de trabajo');
+          $block['content'] =l(t('Crear nueva página de wiki'), 'node/add/wiki');
+        break;
+        case 14:
+  $block['subject'] = t('Búsquedas');
+  $block['content'] =l(t('Crear búsqueda persistente'), 'busqueda');
+        break;
+        case 15:
+  $block['subject'] = t('Gestión ÁREA DE TRABAJO');
+          $block['content'] =l(t('Listado páginas de wiki'), 'gestion/wiki');
+        break;
+        case 16:
+  $block['subject'] = t('Gestión AYUDA');
+          $block['content'] =l(t('Crear nueva ayuda'), 'node/add/faq') .'<br>'. l(t('Listado de páginas de ayuda'), 'gestion/faq');
+        break;
+        case 17:
+  $block['subject'] = t('Gestión CANALES');
+  $block['content'] =l(t('Listado de canales'), 'gestion/canales');
+        break;
+        case 18:
+  $block['subject'] = t('Gestión de NOTICIAS');
+          $block['content'] =l(t('Listado de ítems'), 'gestion/items');
+        break;
+        case 19:
+  $block['subject'] = t('Gestión ÁREA DE DEBATE');
+          $block['content'] =l(t('Listado de hilos de debate'), 'gestion/debate');
+        break;
+        case 20:
+  $block['subject'] = t('Gestión ESTADÍSTICAS');
+          $block['content'] =l(t('Estadísticas generales'), 'analytics');
+        break;
+        case 21:
+  $block['subject'] = t('Gestión GRUPOS');
+          $block['content'] =l(t('Crear grupo'), 'node/add/grupo') .'<br>'
+                              . l(t('Listado de grupos'), 'gestion/grupos') .'<br>'.
+                              l(t('Añadir usuarios a grupos'), 'gestion/usuarios-grupos');
+        break;
+      
+        case 22:
+  $block['subject'] = t('Gestión NOTICIAS DE USUARIO');
+          $block['content'] =l(t('Listado de noticias'), 'gestion/noticias');
+        break;
+        case 23:
+  $block['subject'] = t('Gestión NOTICIAS PÚBLICAS');
+          $block['content'] =l(t('Añadir Noticia'), 'node/add/noticias-portada') .'<br>'.
+                              l(t('Listado de noticias públicas'), 'gestion/noticias-publicas');
+        break;
+            
+        case 24:
+  $block['subject'] = t('Gestión SERVICIOS');
+          $block['content'] =l(t('Crear empresa'), 'node/add/servicio') .'<br>'.
+                              l(t('Listado de empresas y servicios'), 'gestion/servicios');
+        break;
+                  
+        case 25:
+  $block['subject'] = t('Gestión USUARIOS');
+          $block['content'] =l(t('Crear usuario'), 'admin/user/user/create') .'<br>'.
+                              l(t('Listado usuarios/as'), 'gestion/usuarios');
+        break;
+
+        case 26:
+  $block['subject'] = t('Mis contenidos');
+          $block['content'] ='<ul class="menu sf-js-enabled"><li class="leaf first"><a href="/mis-contenidos/fuentes" title="">Mis fuentes</a></li>
+                              <li class="leaf"><a href="/mis-contenidos/canales" title="">Mis canales</a></li>
+                              <li class="leaf"><a href="/mis-contenidos/items" title="">Mis noticias</a></li>
+                              <li class="leaf"><a href="/mis-contenidos/debates" title="">Mis debates</a></li>
+                              <li class="leaf last"><a href="/mis-contenidos/area-trabajo" title="">Mis aportaciones al área de trabajo</a></li>
+                              </ul>';
+        break;
+        case 27:
+  $block['subject'] = t('Noticias de usuarios');
+          $block['content'] =l(t('Crear una noticia nueva'), 'node/add/noticia') .'<br>'.
+                              l(t('Ver todas las noticias'), 'canal-usuarios');
+        break;
+        case 28:
+  $block['subject'] = t('Ver fuentes');
+          $block['content'] =l(t('Ver fuentes Pipe'), 'fuentes-pipes') .'<br>'.
+                              l(t('Ver fuentes  Dapper'), 'fuentes-dapper');
+        break;
+        case 29:
+  $block['subject'] = t('Enlaces');
+          $block['content'] =l(t('Ver estadísticas de cada canal'), 'estadisticas') .'<br>'
+                              . l(t('Ver estadísticas de etiquetas'), 'stat/etiquetas') .'<br>'.
+                              l(t('Ver estadísticas de los Item'), 'stat/item');
+        break;
+
+      }
+    return $block;
+  }
+}
+
+
+
+/**
+ * Registra el tema para este módulo. En este caso utilizamos un tpl que
+ * está ubicado en el directorio del módulo.
+ */
+function hontza_theme() {
+  return array(
+    'hontza' => array(
+      'arguments' => array(
+        'enlaces' => NULL
+      ),
+      'template' => 'hontza',
+      'path' => drupal_get_path('module', 'hontza')
+    )
+  );
+}
+
+function hontza_add_users_block() {
+  global $user;
+  $nid = og_get_group_context()->nid;
+  if ($user->uid == 1 ||  db_result(db_query("SELECT is_admin FROM {og_uid} WHERE uid = %d AND nid = %d", $user->uid, $nid))) {
+    return l(t('Añadir usuarios'), 'og/users/'. $nid);
+  }
+}
+
+function hontza_add_fuentes_block() {
+  global $user;
+  $nid = og_get_group_context()->nid;
+  if ($user->uid == 1 || $user->roles[ADMINISTRADOR] || db_result(db_query("SELECT is_admin FROM {og_uid} WHERE uid = %d AND nid = %d", $user->uid, $nid))) {
+  return l(t('   Añadir fuente (Yahoo Pipes)'), 'crear/fuente-supercanal') .'<br>'. l(t('   Añadir fuente (Dapper)'), 'crear/fuente-dapper');
+  }
+}
+
+//ESTADISTICAS DE CANALES
+function lista_canales_estadisticas(&$form, &$form_state) {
+  global $user;
+  if ($user->uid and og_get_group_context()->nid) {
+    
+    ctools_include('modal');
+    ctools_modal_add_js();
+    //Obtener canales
+    $canales = db_query("SELECT n.title, n.nid FROM {node} n LEFT OUTER JOIN {og_ancestry} o  ON n.nid = o.nid WHERE (n.type = 'canal_busqueda' OR n.type = 'canal_de_supercanal'
+                        OR n.type = 'canal_de_yql') AND o.group_nid = '%d' ORDER BY n.created DESC", og_get_group_context()->nid);
+    $form['item']= array(
+      '#type' => 'fieldset',
+      '#title' => t('Listado de canales del grupo'),
+    );
+    while ($canal = db_fetch_array($canales)) {
+      $form['item']['canales'][] = array(
+        '#type' => 'item',
+        '#value' => '<li>'. l($canal['title'], 'estadisticas/canales/'. $canal['nid'], array('attributes' => array('class' => 'ctools-use-modal'))) .'</li>',
+      );
+    }
+  }
+  else{
+    $form['item']['canales']['a'] = array(
+      '#type' => 'item',
+      '#title' => t('Debe estar en algun grupo.'),
+    );
+  }
+  return $form;
+
+}
+
+
+function estadisticas_modal_callback($js = FALSE) {
+  
+  $salida = t('<p>Evolución de la cantidad de items del canal: '. node_load(arg(2))->title .'</p>');
+  $title = t('Estadisticas del ultimo mes.');
+  if ($js) {
+    ctools_include('ajax');
+    ctools_include('modal');
+    
+    $period = strtotime('-1 month');
+    $quant = new stdClass;
+    $quant->id = 'canales_chart';
+ $quant->label = t('Cantidad de items');  // The title of the chart
+    $quant->labelsum = TRUE; // Show the total amount of items in the chart title
+    $quant->query = "SELECT n.created FROM {content_type_item} c INNER JOIN {node} n ON n.nid = c.nid
+                    WHERE n.created >= %d AND field_item_canal_reference_nid = ". arg(2) ."
+                    ORDER BY created DESC"; // We can provide a custom query instead
+    $quant->table = 'og';
+    $quant->field = 'created';
+    $quant->dataType = 'single';
+    $quant->chartType = 'line';
+  $quants[] = $quant;
+  
+  
+  $salida .= '<p>'. quant_process($quant, $period) .'</p>';
+
+  ctools_modal_render($title, $salida);
+  }
+  else {
+    drupal_set_title($titulo);
+    return $salida;
+  }
+}
+
+//ESTADISTICAS DE ETIQUETAS
+
+function lista_etiquetas_estadisticas(&$form, &$form_state) {
+  global $user;
+  if ($user->uid and og_get_group_context()->nid) {
+    
+    ctools_include('modal');
+    ctools_modal_add_js();
+    //Obtener canales
+    $valores = db_query("SELECT term_data.name AS term_data_name,
+                      COUNT(node.nid) AS num_records, term_node.tid as nid 
+                      FROM {node} node 
+                      LEFT JOIN {term_node} term_node ON node.vid = term_node.vid
+                      LEFT JOIN {term_data} term_data ON term_node.tid = term_data.tid
+                      LEFT JOIN {og_ancestry} og ON node.nid = og.nid
+                      WHERE (term_data.vid in ('3')) AND (node.status <> 0) AND og.group_nid = %d
+                      GROUP BY term_data_name
+                      ORDER BY num_records DESC", og_get_group_context()->nid);
+    $form['item']= array(
+      '#type' => 'fieldset',
+      '#title' => t('Listado de etiquetas agregadas'),
+    );
+    while ($etiquetas = db_fetch_array($valores)) {
+      //Muestra etiquetas que aparecen alguna vez.
+      
+      if ($etiquetas['num_records']!=0) {
+        $form['item']['canales'][] = array(
+          '#type' => 'item',
+          '#value' => '<li>'. l($etiquetas['term_data_name'], 'stat/etiquetas/'. $etiquetas['nid'], array('attributes' => array('class' => 'ctools-use-modal'))) .' -> '. $etiquetas['num_records'] .'</li>',
+        );
+      }
+    }
+  }
+  else {
+    $form['item']['canales']['a'] = array(
+        '#type' => 'item',
+        '#title' => t('Debe estar en algun grupo.'),
+      );
+  }
+return $form;
+
+}
+
+
+function estadisticas_etiquetas_modal_callback($js = FALSE) {
+  
+  $salida = t('<p>Etiquetas mas utilizadas</p>');
+  $title = t('Estadisticas del ultimo mes.');
+  if ($js) {
+    ctools_include('ajax');
+    ctools_include('modal');
+    
+    
+    $period = strtotime('-1 month');
+    $quant = new stdClass;
+    $quant->id = 'etiquetas_chart';
+  $quant->label = t('Cantidad de items');  // The title of the chart
+    $quant->labelsum = TRUE; // Show the total amount of items in the chart title
+    $quant->query = "SELECT n.created FROM {term_node} t INNER JOIN {node} n ON n.nid = t.nid
+                 WHERE n.created >= %d AND t.tid = ". arg(2);
+    $quant->table = 'node';
+    $quant->field = 'created';
+    $quant->dataType = 'single';
+    $quant->chartType = 'line';
+  $quants[] = $quant;
+  
+  
+  $salida .= '<p>'. quant_process($quant, $period) .'</p>';
+
+  ctools_modal_render($title, $salida);
+  }
+  else {
+    drupal_set_title($titulo);
+    return $salida;
+  }
+}
+
+
+
+
+//ESTADISTICAS DE FLAG VALIDACIÓN
+
+function lista_items_validados(&$form, &$form_state) {
+  global $user;
+  if ($user->uid and og_get_group_context()->nid) {
+    //Obtener canales
+    $validadas = db_result(db_query("SELECT count(*) FROM {flag_content} fc LEFT JOIN {node} n ON n.nid = fc.content_id
+                      LEFT JOIN {og_ancestry} og ON n.nid = og.nid
+                      WHERE   n.type = 'item' AND  og.group_nid = %d  AND  fc.fid = 2", og_get_group_context()->nid));
+    $rechazadas = db_result(db_query("SELECT count(*) FROM {flag_content} fc LEFT JOIN {node} n ON n.nid = fc.content_id
+                      LEFT JOIN {og_ancestry} og ON n.nid = og.nid
+                      WHERE   n.type = 'item' AND  og.group_nid = %d  AND  fc.fid = 3", og_get_group_context()->nid));
+    $total = $validadas + $rechazadas;
+    $form['item']= array(
+        '#type' => 'fieldset',
+        '#title' => t('Elementos valorados'),
+        '#description' => t('Elementos totales (item) de este grupo: ') . $total,
+      );
+    $form['item']['valid'] = array(
+        '#type' => 'item',
+        '#value' => '<strong>'. t('Actualmente existen ') . $validadas . t(' items validados.') .'</strong>',
+      );
+    $form['item']['invalid'] = array(
+        '#type' => 'item',
+        '#value' => '<strong>'. t('Actualmente existen ') . $rechazadas . t(' items rechazados.') .'</strong>',
+      );
+    
+  }
+  else {
+    $form['canales']['a'] = array(
+        '#type' => 'item',
+        '#title' => t('Debe estar en algun grupo.'),
+      );
+  }
+return $form;
+
+}
+
+/*
+ *Función que verifica si alguno de los sub-nodos tiene items asociados
+ */
+function hijoscontieneitems($tid, $id_categoria) {
+  $tree=taxonomy_get_children($tid);
+  foreach ($tree as $id => $contenido) {
+    //Consulta para obtener el numero de items de cada categoria
+    $num_items = db_result(db_query("SELECT COUNT(DISTINCT(node.nid)) AS num_records
+                                    FROM node node LEFT JOIN {term_node term_node} ON node.vid = term_node.vid
+                                    LEFT JOIN {term_data} term_data ON term_node.tid = term_data.tid
+                                    WHERE (node.type in ('canal_busqueda', 'canal_de_supercanal', 'canal_de_yql')) AND term_data.vid=%d AND term_data.tid=%d
+                                    GROUP BY term_data.name", $id_categoria, $contenido->tid));
+    if ($num_items) {
+      return TRUE;
+      break;
+    }
+    elseif (_taxonomy_term_children($contenido->tid)) {
+      return hijoscontieneitems($contenido->tid, $id_categoria);
+    }
+  }
+  return FALSE;
+}
+
+/*
+ *Funcion recursiva que devuelve la profundiad de un termino
+ */
+function profundidad($tid) {
+  variable_set('profundidad_valor', 0);
+  $parent = db_result(db_query('SELECT parent FROM {term_hierarchy} WHERE tid = %d', $tid));
+  if ($parent!=0) {
+    $num=variable_get('profundidad', 0);
+    $num=$num+1;
+    variable_set('profundidad', $num);
+    profundidad($parent);
+  }
+  else{
+    $val=variable_get('profundidad', 0);
+    variable_set('profundidad', 0);
+    variable_set('profundidad_valor', $val);
+  } 
+}
+
+
+
+//Estadisticas con quant(estadisticas)
+
+function hontza_quants() {
+  $quants = array();
+    
+     // Group Creation
+    $quant = new stdClass;
+    $quant->id = 'group_creation1';
+    $quant->label = t('Creación de grupos');
+    $quant->labelsum = TRUE; // Show the total amount of items in the chart title
+    $quant->query = "SELECT n.created FROM {og} g INNER JOIN {node} n 
+      ON g.nid = n.nid WHERE n.created >= %d 
+      ORDER BY n.created DESC"; // We can provide a custom query instead
+    $quant->table = 'og';
+    $quant->field = 'created';
+    $quant->dataType = 'single';
+    $quant->chartType = 'line';
+    $quants[] = $quant;
+    
+    
+  
+  // Content Creation
+  $quant = new stdClass;
+  $quant->id = 'content_creation1';
+  $quant->label = t('Creacion de contenido');
+  $quant->labelsum = TRUE;
+  $quant->table = 'node';
+  $quant->field = 'created';
+  $quant->query = quant_node_query();
+  $quant->dataType = 'single';
+  $quant->chartType = 'line';
+  $quants[] = $quant;
+  
+  // Comment Creation
+  if (module_exists('comment')) {
+  $quant = new stdClass;
+  $quant->id = 'comment_creation1';
+  $quant->label = t('Creación de comentarios');
+  $quant->labelsum = TRUE;
+  $quant->table = 'comments';
+  $quant->field = 'timestamp';
+  $quant->dataType = 'single';
+  $quant->chartType = 'line';
+  $quants[] = $quant;
+  }
+  
+  // Content Creation by Type
+  $quant = new stdClass;
+  $quant->id = 'node_creation_by_type1';
+  $quant->label = t('Creación de contenidos por type');
+  $quant->labelsum = TRUE;
+  $quant->table = 'node';
+  $quant->field = 'created';
+  $quant->group = 'type'; // Which db field to group items by
+  $quant->query = quant_node_query(array($quant->group));
+  $quant->dataType = 'multiple'; // See $quant->group
+  $quant->chartType = 'line';
+  $quants[] = $quant;
+
+  // User Creation
+  $quant = new stdClass;	
+  $quant->id = 'user_creation1';
+  $quant->label = t('Creación de usuarios');
+  $quant->labelsum = TRUE;
+  $quant->table = 'users';
+  $quant->field = 'created';
+  $quant->dataType = 'single';
+  $quant->chartType = 'line';
+  $quants[] = $quant;
+  return $quants;
+}
+
+
+function publicar_fuentes_form() {
+  drupal_set_title("Publicar fuentes");
+  $form = array();
+  
+  $form['fuentes'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Fuentes disponibles'),
+    '#collapsible' => 1,
+    '#collapsed' => FALSE,
+    '#description' => t('Listado de fuentes')
+  );
+  $canales = db_query("SELECT title, nid FROM {node} WHERE type = 'fuentedapper' OR type = 'supercanal' GROUP BY title");
+  while ($canal = db_fetch_array($canales)) {  
+    $form['fuentes'][$canal['nid']] = array(
+      '#type' => 'checkbox',
+      '#title' => $canal['title'],
+    );
+  }
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Guardar'),
+  );
+  return $form;
+}
+
+/**
+ * 
+ *
+ */
+function publicar_fuentes_form_submit(&$form, &$form_state) {
+  $count=0;
+  foreach ($form_state['values'] as $tid => $cont) {
+    if ($cont==1) {
+      
+      //obtener el id del grupo del nodo
+      $no_group=db_result(db_query("SELECT group_nid FROM {og_ancestry} WHERE nid = %d", node_load($tid)->nid));
+      
+      //Obtener todos los grupos disponibles
+      $result=db_query("SELECT nid FROM {og} WHERE nid<> %d", $no_group);
+      while ($new = db_result($result)) {
+          $canal = node_load($tid);
+          unset($canal->nid);
+          $canal->og_groups=array($new => $new);
+          $titulo=db_result(db_query("SELECT title FROM {node} WHERE nid=%d", $new));
+          $canal->og_groups_both=array($new => $titulo);
+          
+          $existe_nodo=db_result(db_query("SELECT count(*) FROM {node} n LEFT OUTER JOIN {og_ancestry} o ON n.nid = o.nid WHERE n.type = '%s'  AND n.title = '%s' AND o.group_nid = '%s'", $canal->type, $canal->title, $new));
+
+          if ($existe_nodo==0) {
+            node_save($canal);
+            $count++;
+          }
+      }
+    }
+  }
+  drupal_set_message('Se han creado '. $count .' fuentes nuevas para otros grupos', 'status'); 
+}
+
+
+function fuentes_publicas_form(&$form, &$form_state) {
+    drupal_set_title("Listado de fuentes");
+    
+    $form = array();
+    $numero_grupos=db_result(db_query("SELECT count(*) FROM {og}"));
+
+    $form['fuentes'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Fuentes publicas'),
+      '#collapsible' => 1,
+      '#collapsed' => FALSE,
+      '#description' => 'Existen '. $numero_grupos .' grupos en HONTZA.<br><br>'. t('Listado de fuentes que se han publicado en varios grupos')
+    );
+    
+    $canales = db_query("SELECT title, nid FROM {node} WHERE type = 'fuentedapper' OR type = 'supercanal' GROUP BY title");
+    while ($canal = db_fetch_array($canales)) {
+          $cont_fuentes=db_result(db_query("SELECT count(*) FROM {node}  WHERE (type = 'fuentedapper' OR type = 'supercanal') AND title = '%s'", $canal['title']));
+     
+      if ($cont_fuentes!=1) {
+        $form['fuentes'][] = array(
+          '#type' => 'item',
+          '#title' => l($canal['title'], 'node/'. $canal['nid']) .', fuente publicada en: '. $cont_fuentes .' grupos',
+        );
+      }
+    }
+    return $form;
+  }
+
+/*
+ *Función auxiliar que dado un rol devuelve su identificador
+ *
+ */
+function _role_id($role) {
+  return db_result(db_query("SELECT rid FROM {role} WHERE name = '%s'", $role));
+}

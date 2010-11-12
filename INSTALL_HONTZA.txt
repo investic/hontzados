@@ -1,0 +1,212 @@
+/ / $ Id: INSTALL.txt, v 1.61.2.4 2008/07/09 19:15:59 Goba Exp. Traducción basada en el fichero INSTALL.TXT de Drupal. Recomendamos la lectura de su versión en inglés $
+
+CONTENIDO DE ESTE ARCHIVO
+---------------------
+
+ * Requisitos
+ * Requisitos opcionales
+ * Instalación
+ * Administración de Drupal
+ * Personalizar el tema (s)
+ * Configuración del multisite
+ * Más información
+
+REQUISITOS
+------------
+
+Drupal requiere un servidor web, PHP 4 (4.3.5 o superior) o PHP 5
+(Http://www.php.net/) y, o bien MySQL (http://www.mysql.com/) o PostgreSQL
+(Http://www.postgresql.org/). Son recomendados el servidor web Apache y base de datos de MySQL, servidor web y las combinaciones de bases de datos tales como IIS y PostgreSQL que ha sido probado en menor medida. Con el uso de MySQL, la versión 4.1.1 o superior, se recomienda asegurar que se puede transferir con seguridad la base de datos.
+
+Para obtener información más detallada sobre los requisitos de Drupal, consulte el apartado "Requisitos" (Http://drupal.org/requirements) en el manual de Drupal.
+
+Para obtener información detallada sobre cómo configurar un entorno de servidor de prueba con una variedad de sistemas operativos y servidores Web, consulte la sección "configuración del servidor local" (Http://drupal.org/node/157602) en el manual de Drupal.
+
+OPCIONAL TAREAS
+--------------
+
+- Para utilizar los servicios basados en XML, como la API de Blogger y sindicación RSS, es necesaria la extensión de PHP XML. Esta extensión está activada por defecto.
+
+- Para el uso de la funcionalidad de Drupal "URL amigables" en un servidor web Apache, necesitará el módulo mod_rewrite y la capacidad de uso local. htaccess. Para el soporte de "URL amigables" en IIS, consulte "Using Clear URLs with IIS" (Http://drupal.org/node/3854) en el manual de Drupal.
+
+- Varias características de Drupal requieren que el proceso del servidor web (por ejemplo, httpd) sea capaz de iniciar conexiones salientes. Esto es por lo general posible, pero algunos proveedores de alojamiento o configuraciones de servidor prohíben tales conexiones.
+
+
+INSTALACIÓN
+------------
+
+1. Descargar Drupal y, opcionalmente, una TRADUCCIÓN
+
+   Puede obtener la última versión de Drupal http://drupal.org/. Los archivos
+   están en formato. tar.gz y puede ser extraído a través de cualquier herramienta de compresión. En una típica de Unix de línea de comandos, utilice:
+
+     wget http://drupal.org/files/projects/drupal-xxtar.gz
+     tar-zxvf drupal-x.x.tar.gz
+
+   Esto creará un nuevo directorio drupal-xx / que contiene todos los archivos de Drupal y directorios. Mover el contenido de ese directorio en un directorio dentro de el servidor web de la raíz del documento o su directorio público de HTML:
+
+     mv drupal-xx / drupal-xx/.htaccess * / var / www / html
+
+   Si a usted le gustaría tener la interfaz que por defecto está en Inglés traducida a otros idiomas, no hay problema. Usted puede instalar y utilizar Drupal otros idiomas desde el principio. En primer lugar deberá comprobar si está disponible el paquete con el idioma deseado para esa versión de Drupal. Puede comprobarlo en http://drupal.org/project/translations, descargar el paquete y extraer los contenidos en el mismo directorio donde extrajo en Drupal.
+
+2. CREAR EL ARCHIVO DE CONFIGURACIÓN Y conceder permisos de escritura
+
+   Drupal viene con un archivo default.settings.php en los sitios / default
+   de la guía. El programa de instalación utiliza este archivo como plantilla para crear su archivo de configuración utilizando los datos que usted proporciona a través del proceso de instalación.
+   Para evitar problemas al actualizar, Drupal no se empaqueta con un verdadero archivo de configuración. Debe crear un archivo llamado settings.php. Usted puede hacerlo haciendo una copia de default.settings.php (o crear un archivo vacío con este nombre en el mismo directorio). Por ejemplo, (a partir de la instalación directorio) hacer una copia del archivo default.settings.php con el comando:
+
+     sitios cp / default / sitios default.settings.php / default / settings.php
+
+   A continuación, daremos al servidor web, los privilegios de escritura a los sitios / default / settings.php archivo con el comando (desde el directorio de instalación):
+
+     chmod sitios o w / default / settings.php
+
+
+
+3. CREAR LA BASE DE DATOS DRUPAL
+
+   Drupal requiere del acceso a una base de datos con el fin de ser instalado. Su base de datos de usuario tendrá privilegios suficientes para ejecutar Drupal. Para disponer de información adicional acerca de los privilegios, y las instrucciones para crear una base de datos con el comando línea están disponibles en INSTALL.mysql.txt (para MySQL) o INSTALL.pgsql.txt
+   (Para PostgreSQL).
+
+   Para crear una base de datos usando phpMyAdmin o un panel de control basado en web se puede consultar la documentación o consulte a su proveedor de servicios de alojamiento web.
+
+Ten en cuenta el nombre de usuario, contraseña y nombre de la base de datos que te ha dado tu hosting.
+
+4. Ejecute el script Install
+
+Para la instalación vaya a la url base de su sitio web.(Por ejemplo, http://www.example.com).
+
+   Se le guiará a través de varias pantallas para configurar la base de datos,crear tablas, agregar la primera cuenta de usuario y proporcionar la configuración básica del sitio web.
+
+   El script de instalación intentará crear un directorio de almacenamiento de archivos en la ubicación predeterminada en los sitios / default / files (la ubicación de la directorio de archivos puede ser cambiado después de que Drupal esté instalado). En algunos casos, puede que tenga que crear el directorio y modificar sus permisos manualmente. Utilice los siguientes comandos (desde el directorio de instalación) para crear el directorio de archivos y conceder el servidor web, los privilegios de escritura a la misma:
+
+     sitios mkdir / default / archivos
+     chmod sitios o w / default / archivos
+
+   El script de instalación tratará de protección contra escritura el archivo settings.php y los sitios / el directorio por defecto después de guardar la configuración. Sin embargo, puede ser necesario escribir manualmente, protegerlos con los comandos (desde el directorio de instalación):
+
+     chmod a w-sites / default / settings.php
+     chmod sitios a-w / default
+
+   Si más adelante realiza cambios manuales en el archivo, asegúrese de protegerlo de nuevo después de hacer las modificaciones. Si no se retiran los permisos de escritura al archivo es un riesgo de seguridad. Aunque la ubicación por defecto para el settings.php se encuentra en sites / default / settings.php, puede ser en otro lugar si utiliza la configuración multi-sitio, tal como se explica a continuación.
+
+5. CONFIGURAR DRUPAL
+
+   Cuando el script de instalación se realiza correctamente, se le dirigirá a la página de "Bienvenida", y usted podrá acceder como administrador. Continúe con los pasos de configuración inicial sugerido en la página de bienvenida.
+
+   Si el tema por defecto de Drupal no se muestra correctamente y los enlaces de la página llevan a "Página no encontrada", intente ajustar manualmente la variable $ base_url en el archivo settings.php. En la actualidad es conocido que los servidores ejecutando FastCGI puede tener problemas si la variable $ base_url se deja comentario (ver http://bugs.php.net/bug.php?id=19656).
+
+6. EXAMEN DE ARCHIVO AJUSTES DEL SISTEMA DE ALMACENAMIENTO Y PERMISOS DE ARCHIVOS
+
+El directorio de los archivos creados en el paso 4 es el directorio por defecto del sistema que será utilizado para almacenar todos los archivos cargados, así como algunos archivos temporales creados por Drupal.
+
+   Después de la instalación, la configuración de la ruta del sistema de archivo puede ser modificada para almacenar los archivos subidos en una ubicación diferente.
+
+   No es necesario modificar este camino, pero puede que desee cambiar si:
+
+     * El sitio ejecuta varias instalaciones de Drupal a partir de una base de código único  (Modificar la ruta del sistema de archivo de cada instalación a otro directorio para que las cargas no se superponen entre las instalaciones), o bien,
+
+     * El sitio se ejecuta un número de servidores web front-ends detrás de una carga equilibrador o proxy inverso (modificar la ruta del sistema de archivos en cada servidor para que apunte a un archivo de repositorio compartido).
+
+   Para modificar la ruta del sistema de archivo:
+
+* Asegúrese de que la nueva ubicación de la ruta existente o crear si es necesario. Para crear un nuevo directorio llamado files, por ejemplo, utilice el comando siguiente desde una ventana o indicador del sistema (mientras que en
+       el directorio de instalación):
+
+           archivos mkdir
+
+
+     * Acceda al archivo de configuración de sistema de ruta en Drupal mediante la selección de estos elementos de menú en el menú de navegación:
+
+           Administrar> Configuración del sitio> Sistema de archivos
+
+       Introduzca la ruta a la nueva ubicación (por ejemplo: archivos) en el archivo Ruta de acceso del sistema del sistema.
+
+   Cambiar la ruta del sistema de archivos después de que los archivos se hayan subido puede causar problemas inesperados en un sitio existente. Si modifica la ruta de acceso del sistema de archivos en un sitio existente, no olvide copiar todos los archivos de la ubicación original a la nueva ubicación.
+
+  Algunos administradores de lo que sugieren los archivos de documentación, sobre todo 
+   Changelog.txt, no legibles, para que la versión exacta de Drupal que se
+   correr es un poco más difícil de determinar. Si desea implementar
+   esta medida de seguridad opcional, utilice el comando siguiente desde una ventana o
+   indicador del sistema (mientras que en el directorio de instalación):
+
+          chmod a-r Changelog.txt
+
+   Tenga en cuenta que el único ejemplo que afecta Changelog.txt. Para ocultar completamente todos los archivos de documentación de la vista pública, repita este comando para cada uno de los archivos de documentación de Drupal en el directorio de instalación, sustituyendo el nombre de cada archivo para Changelog.txt en el ejemplo.
+
+   Para obtener más información sobre los permisos de archivos, consulte "Modificación de Linux, Unix, y los permisos de archivo Mac "(http://drupal.org/node/202483) o" Modificación de los permisos de archivos de Windows "(http://drupal.org/node/202491) en la línea manual.
+
+7. CRON TAREAS DE MANTENIMIENTO
+
+   Muchos módulos Drupal incluyen tareas periódicas que deben ser desencadenada por un cron  tarea de mantenimiento, incluyendo el módulo de búsqueda (para construir y actualizar el índice utiliza para búsqueda de palabras clave), el módulo agregador (para recuperar contenidos de otros    sitios), mesa de ping módulo (para notificar a otros sitios sobre el contenido nuevo o actualizado), y módulo del sistema (para realizar el mantenimiento rutinario y la poda en las tablas del sistema).
+   Para activar estas tareas, llame a la página de cron, visite http://www.example.com/cron.php, que, a su vez, ejecuta tareas en nombre
+   de los módulos instalados.
+
+   La mayoría de los sistemas de apoyo a la utilidad crontab para programar tareas como esta. La siguiente línea crontab ejemplo activará las tareas cron automáticamente en la hora:
+
+   0 * * * * wget-O --q-t 1 http://www.example.com/cron.php
+
+   Sobre las tareas de mantenimiento de cron hay más información disponible en las páginas de ayuda y en el manual online de Drupal en http://drupal.org/cron. Para ver más scripts de ejemplos puede consultar en scripts /.
+
+Drupal ADMINISTRACIÓN
+---------------------
+
+Una nueva instalación por defecto de Drupal cuenta con una configuración muy básica con sólo una pocos módulos activos y los mínimos derechos de acceso al usuario.
+
+Usa tu panel de administración para habilitar y configurar los servicios. Por ejemplo:
+
+Configuración general Administrar> Configuración del sitio> Información del sitio
+Habilitar módulos Administrar> obra> Módulos
+Configurar Temas Administrar> obra> Temas
+Establecer permisos de usuario Administrar> gestión de permisos de usuario>
+
+Para obtener más información sobre las opciones de configuración, lea las instrucciones que
+acompañar a los ajustes de configuración diferentes y consulte las varias págians de ayuda disponibles en el panel de administración.
+
+Las contribuciones de los módulos y los temas están disponibles en http://drupal.org/.
+
+PERSONALIZACIÓN DEL TEMA (S)
+-------------------------
+
+Ahora que la instalación está en ejecución, tendrá que personalizar el aspecto de su sitio. Se incluyen varios temas pero pueden descargarse más desde drupal.org. Cualquier personalización sencilla de su tema se puede hacer utilizando sólo CSS. Otros cambios requieren de la comprensión del motor PHPTemplate que forma parte de Drupal. Ver http://drupal.org/handbook/customization para obtener más información.
+
+MULTISITIO CONFIGURACIÓN
+-----------------------
+
+Una sola instalación de Drupal puede alojar varios sitios Drupal, cada uno con su configuración individual.
+
+Las configuraciones adicionales del sitio se crean en subdirectorios dentro de los "sitios" de la guía. Cada subdirectorio debe tener un archivo "settings.php" que especifica los ajustes de configuración. La forma más fácil de crear sitios adicionales es copiar el directorio 'default' y modificar el archivo "settings.php", según corresponda. El nombre del nuevo directorio se construye a partir de la URL del sitio. La configuración para www.example.com podría estar en los sitios / example.com / settings.php '(nota que' www. 'debe omitirse si los usuarios pueden acceder a su sitio en http://example.com/).
+Los sitios no tienen que tener un dominio diferente. También puede usar subdominios y subdirectorios para los sitios Drupal. Por ejemplo, example.com, sub.example.com, y sub.example.com/site3 todos pueden definirse como sitios independientes de Drupal. La configuración de este tipo se vería como la siguiente:
+
+  sites / default / settings.php
+  sitios / example.com / settings.php
+  sitios / sub.example.com / settings.php
+  sites/sub.example.com.site3/settings.php
+
+
+
+Si va a instalar en un puerto no estándar, el número de puerto es tratado como el más profundo subdominio. Por ejemplo: http://www.example.com:8080/ se pudo cargar de sites/8080.www.example.com /. El número de puerto serán eliminados de acuerdo a el patrón anterior, si ninguna configuración de puertos específicos se encuentra, al igual que un verdadero subdominio.
+
+Cada configuración del sitio puede tener sus propios módulos y temas específicos. Además de los instalados en los "módulos" de la norma y directorios "temas". Para utilizar los módulos específicos o temas específicos del sitio, basta con crear un directorio "módulos" o "temas" dentro del directorio de configuración del sitio. Por ejemplo, si sub.example.com tiene un tema personalizado y un módulo personalizado al cual no tienen acceso el resto de sitios, la instalación sería la siguiente:
+
+  sitios / sub.example.com /:
+  settings.php
+  temas / custom_theme
+  modules / custom_module
+
+NOTA: para obtener más información acerca de múltiples máquinas virtuales o la configuración configuración, consulte el manual de Drupal en drupal.org.
+
+Para obtener más información sobre la configuración de ruta de Drupal del sistema de archivos en un multi-sitio configuración, véase el paso 6.
+
+MÁS INFORMACIÓN
+----------------
+
+- Para obtener documentación adicional, consulte el manual online en Drupal
+  http://drupal.org/handbook.
+
+- Para obtener una lista de anuncios de seguridad, consulte la sección "anuncios de Seguridad" de la página en http://drupal.org/security (disponible como un feed RSS). Esta página también describe cómo suscribirse a estos anuncios a través del correo electrónico.
+
+- Para obtener información sobre el proceso de seguridad de Drupal, o para saber cómo informar un problema de seguridad potencial para el equipo de seguridad de Drupal, consulte el "equipo de seguridad" página http://drupal.org/security-team.
+
+- Para obtener información sobre la amplia gama de opciones de asistencia disponibles, visite la "Ayuda" en la página http://drupal.org/support.
+

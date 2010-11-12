@@ -1,0 +1,4 @@
+name = Hontza Notificaciones
+description = Notificaciones personalizadas
+package = Hontza
+core = 6.x

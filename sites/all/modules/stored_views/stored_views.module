@@ -1,0 +1,137 @@
+<?php
+
+/**
+ * Implementation of hook_menu().
+ */
+function stored_views_menu() {
+  $items = array();
+  $items['stored-views/%stored_views_id/delete'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('stored_views_delete_confirm', 1),
+    'access callback' => 'user_access',
+    'access arguments' => array('manage stored views'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function stored_views_perm() {
+  return array('manage stored views');
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function stored_views_block($op = 'list', $delta = 0) {
+  switch ($op) {
+    case 'list':
+      $blocks = array();
+      $blocks['save']['info'] = t('Save current view block');
+      $blocks['save']['cache'] = BLOCK_CACHE_GLOBAL;
+      return $blocks;
+    case 'view':
+      if ($delta == 'save') {
+         return _stored_views_block_save();
+      }
+  }
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function stored_views_theme() {
+  return array(
+    'stored_views_form' => array(
+      'arguments' => array('form' => array()),
+    )
+  );
+}
+
+/**
+ * Theme function for stored_views_form().
+ */
+function theme_stored_views_form($form) {
+  return drupal_render($form);
+}
+
+/**
+ * Create a save form.
+ */
+function stored_views_form($form_state){
+  $form = array();
+  $form['description']['#value'] = '<div class="description">'. t('Guardar búsqueda persistente') .'</div>';
+  $form['nombre'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Nombre'),
+    '#size' => 15,
+    '#required' => TRUE,  
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add'),
+  );
+  $form['#submit'][] = 'stored_views_form_submit';
+  return $form;
+}
+
+/**
+ * Submit stored_views_form.
+ */
+function stored_views_form_submit($form, &$form_state) {
+  global $user;
+  $busqueda = _get_busqueda();
+  $node = new stdClass();
+  $node->type = 'canal_busqueda';
+  $node->title = $form_state['values']['nombre'];
+  $node->uid = $user->uid;
+  $node->field_canal_busqueda_busqueda[0]['value'] = $busqueda;
+  $node->field_fuente_canal[0]['value']= 'Busqueda';
+  node_save($node);
+}
+
+/**
+ * Helper function for creating a save block.
+ */
+function _stored_views_block_save() {
+  if (user_access('manage stored views')) {
+    if ($_GET['search']){
+      global $user;
+      $busqueda = _get_busqueda();
+      db_query("SELECT * FROM {content_type_canal_busqueda} cb INNER JOIN {node} n ON n.nid = cb.nid WHERE field_canal_busqueda_busqueda_value LIKE '%s' AND n.uid = %d", $busqueda, $user->uid);
+      if (!db_affected_rows()){
+        $content = drupal_get_form('stored_views_form');
+      }
+      else{
+        $content = t('Ya tienes esta búsqueda guardada');
+      }
+      return array(
+        'subject' => '',
+        'content' => $content,
+      );
+    }
+  }
+}
+
+function _get_busqueda(){
+  $query = array();
+  foreach ($_GET as $k => $v) {
+    if ($k != 'q') {
+      $query[] = "$k=$v";
+    }
+  }
+  return $_GET['q'].'?'.implode('&', $query);
+}
+
+/**
+ *Implementation of hook_form_alter
+ */
+function stored_views_form_alter(&$form, &$form_state, $form_id){
+ 
+  if($form_id=='views_exposed_form'){
+   // $form['#parameters'][1]['view']->exposed_input['body']=$form['#parameters'][1]['view']->exposed_input['title'];
+  //dprint_r($form);
+  }
+}

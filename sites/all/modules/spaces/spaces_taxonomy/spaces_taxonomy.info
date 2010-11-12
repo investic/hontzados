@@ -1,0 +1,15 @@
+; $Id: spaces_taxonomy.info,v 1.1.2.1.4.3 2010/03/21 21:27:58 yhahn Exp $
+name = "Spaces Taxonomy"
+description = "Provides integration between Spaces and Taxonomy."
+package = "Spaces"
+core = "6.x"
+dependencies[] = purl
+dependencies[] = spaces
+dependencies[] = taxonomy
+
+; Information added by drupal.org packaging script on 2010-08-23
+version = "6.x-3.0"
+core = "6.x"
+project = "spaces"
+datestamp = "1282589208"
+

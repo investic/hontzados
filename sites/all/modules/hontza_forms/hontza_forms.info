@@ -1,0 +1,4 @@
+name = Hontza Forms
+description = Modulo para ocultar campos median form alter,
+package = Hontza Forms
+core = 6.x

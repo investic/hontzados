@@ -1,0 +1,36 @@
+<?php
+// $Id: spaces_blog.module,v 1.1.2.1.2.3 2009/12/17 22:33:05 alexb Exp $
+
+include_once('spaces_blog.features.inc');
+
+/**
+ * Implementation of hook_menu().
+ */
+function spaces_blog_menu() {
+  $items = array();
+  $items['features/spaces_blog'] = array(
+    'title' => 'Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('spaces_blog_settings'),
+    'access callback' => 'spaces_access_admin',
+    'access arguments' => array(),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Settings form for Spaces blog feature.
+ * Allows some basic comment settings to be configured per space.
+ */
+function spaces_blog_settings($form_state) {
+  $base = array('#node_type' => (object) array('type' => 'blog'), 'identity' => array('type' => array()));
+  comment_form_alter($base, $form_state, 'node_type_form');
+
+  $form = array();
+  $keys = array('comment', 'comment_subject_field', 'comment_preview', 'comment_form_location');
+  foreach ($keys as $variable) {
+    $form["{$variable}_blog"] = $base['comment'][$variable];
+  }
+  return system_settings_form($form);
+}

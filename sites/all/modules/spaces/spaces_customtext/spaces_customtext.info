@@ -1,0 +1,13 @@
+; $Id: spaces_customtext.info,v 1.1.2.1 2009/12/19 18:31:55 yhahn Exp $
+core = "6.x"
+dependencies[] = "spaces"
+description = "Allows a space administrator to customize text used in that space."
+name = "Spaces Custom Text"
+package = "Spaces"
+
+; Information added by drupal.org packaging script on 2010-08-23
+version = "6.x-3.0"
+core = "6.x"
+project = "spaces"
+datestamp = "1282589208"
+

@@ -1,0 +1,4 @@
+name = Hontza Grupos
+description = Gestionar mis grupos
+package = Hontza
+core = 6.x

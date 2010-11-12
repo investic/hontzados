@@ -1,0 +1,13 @@
+; $Id: spaces_user.info,v 1.1.2.2.4.2 2009/12/14 23:19:16 yhahn Exp $
+name = "Spaces User"
+description = "Provides integration between Spaces and User."
+package = "Spaces"
+core = "6.x"
+dependencies[] = spaces
+
+; Information added by drupal.org packaging script on 2010-08-23
+version = "6.x-3.0"
+core = "6.x"
+project = "spaces"
+datestamp = "1282589208"
+
