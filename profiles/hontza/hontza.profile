@@ -268,7 +268,7 @@ function _hontza_base_settings() {
   $theme_settings['site_slogan'] = FALSE;
   //$theme_settings['site_name'] = FALSE;
   $theme_settings['default_logo'] = FALSE;
-  $theme_settings['logo_path'] = 'sites/default/files/logo.png';
+  //$theme_settings['logo_path'] = 'sites/default/files/logo.png';
   variable_set('theme_settings', $theme_settings);    
   
   // Basic Drupal settings.
