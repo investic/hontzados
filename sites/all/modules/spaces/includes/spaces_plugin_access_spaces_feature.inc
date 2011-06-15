@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_plugin_access_spaces_feature.inc,v 1.1.2.3.2.2.2.6 2010/07/30 03:29:11 yhahn Exp $
 
 /**
  * Provides access control for views by checking against the current space's
@@ -30,7 +29,7 @@ class spaces_plugin_access_spaces_feature extends views_plugin_access {
   function get_access_callback() {
     $feature = $this->options['spaces_feature'] == 0 ? $this->get_my_feature() : $this->options['spaces_feature'];
     if (!empty($this->options['perm'])) {
-      return array('spaces_access_feature', array('view', $feature, NULL, NULL, array($this->options['perm'])));
+      return array('spaces_access_feature_perms', array('view', $feature, NULL, NULL, array($this->options['perm'])));
     }
     return array('spaces_access_feature', array('view', $feature, NULL));
   }

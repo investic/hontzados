@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_dashboard.admin.inc,v 1.1.2.6 2010/07/26 03:26:47 yhahn Exp $
 
 /**
  * Form for adding/editing custom Dashboards.

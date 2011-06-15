@@ -1,5 +1,4 @@
 <?php
-// $Id: views_or_handler_field.inc,v 1.3 2009/04/28 19:01:55 darrenoh Exp $
 
 /**
  * @file

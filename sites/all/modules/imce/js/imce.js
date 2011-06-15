@@ -1,4 +1,3 @@
-// $Id: imce.js,v 1.16.2.6 2010/06/19 15:18:06 ufku Exp $
 
 (function($) {
 //Global container.
@@ -10,8 +9,9 @@ hooks: {load: [], list: [], navigate: [], cache: []},
 initiate: function() {
   imce.conf = Drupal.settings.imce || {};
   if (imce.conf.error != false) return;
-  imce.FLW = imce.el('file-list-wrapper');
-  imce.SBW = imce.el('sub-browse-wrapper');
+  imce.FLW = imce.el('file-list-wrapper'), imce.SBW = imce.el('sub-browse-wrapper');
+  imce.NW = imce.el('navigation-wrapper'), imce.BW = imce.el('browse-wrapper');
+  imce.PW = imce.el('preview-wrapper'), imce.FW = imce.el('forms-wrapper');
   imce.updateUI();
   imce.prepareMsgs();//process initial status messages
   imce.initiateTree();//build directory tree
@@ -21,8 +21,6 @@ initiate: function() {
   imce.refreshOps();
   imce.invoke('load', window);//run functions set by external applications.
 },
-
-/**************** DIRECTORIES ********************/
 
 //process navigation tree
 initiateTree: function() {
@@ -81,6 +79,7 @@ dirCollapsible: function (branch) {
     if (branch.ul) {
       $(branch.ul).toggle();
       $(branch.li).toggleClass('expanded');
+      $.browser.msie && $('#navigation-header').css('top', imce.NW.scrollTop);
     }
     else if (branch.clkbl){
       $(branch.a).click();
@@ -105,8 +104,6 @@ dirSubdirs: function(dir, subdirs) {
     $(branch.li).removeClass('expanded').addClass('leaf');
   }
 },
-
-/**************** FILES ********************/
 
 //process file list
 initiateList: function(cached) {
@@ -223,8 +220,6 @@ fileToggleSelect: function (fid) {
   imce['file'+ (imce.selected[fid] ? 'De' : '') +'Select'](fid);
 },
 
-/**************** OPERATIONS ********************/
-
 //process file operation form and create operation tabs.
 initiateOps: function() {
   imce.setHtmlOps();
@@ -266,7 +261,7 @@ setFileOps: function () {
     var Op = {name: $sbmt.attr('id').substr(5)};
     var func = function() {imce.fopSubmit(Op.name); return false;};
     $sbmt.click(func);
-    Op.title = $(this).children('legend').remove().text();
+    Op.title = $(this).children('legend').remove().text() || $sbmt.val();
     Op.name == 'delete' ? (Op.func = func) : (Op.content = this.childNodes);
     imce.opAdd(Op);
   }).remove();
@@ -285,15 +280,16 @@ refreshOps: function() {
 opAdd: function (op) {
   var oplist = imce.el('ops-list'), opcons = imce.el('op-contents');
   var name = op.name || ('op-'+ $(oplist).children('li').size());
-  var Op = imce.ops[name] = {title: op.title || 'Untitled'};
+  var title = op.title || 'Untitled';
+  var Op = imce.ops[name] = {title: title};
   if (op.content) {
     Op.div = imce.newEl('div');
     $(Op.div).attr({id: 'op-content-'+ name, 'class': 'op-content'}).appendTo(opcons).append(op.content);
   }
   Op.a = imce.newEl('a');
   Op.li = imce.newEl('li');
-  $(Op.a).attr({href: '#', 'name': name}).html('<span>' + op.title +'</span>').click(imce.opClickEvent);
-  $(Op.li).attr('id', 'op-item-'+ op.name).append(Op.a).appendTo(oplist);
+  $(Op.a).attr({href: '#', name: name, title: title}).html('<span>' + title +'</span>').click(imce.opClickEvent);
+  $(Op.li).attr('id', 'op-item-'+ name).append(Op.a).appendTo(oplist);
   Op.func = op.func || imce.opVoid;
   return Op;
 },
@@ -316,12 +312,12 @@ opClick: function(name) {
   if (Op.div) {
     if (oldop) {
       var toggle = oldop == name;
-      imce.opShrink(oldop, toggle ? 'slideUp' : 'hide');
+      imce.opShrink(oldop, toggle ? 'fadeOut' : 'hide');
       if (toggle) return false;
     }
     var left = Op.li.offsetLeft;
     var $opcon = $('#op-contents').css({left: 0});
-    $(Op.div).slideDown('normal', function() {
+    $(Op.div).fadeIn('normal', function() {
       setTimeout(function() {
         if (imce.vars.op) {
           var $inputs = $('input', imce.ops[imce.vars.op].div);
@@ -332,9 +328,9 @@ opClick: function(name) {
       });
     });
     var diff = left + $opcon.width() - $('#imce-content').width();
-    $opcon.css({left: diff > 0 ? left - diff : left});
+    $opcon.css({left: diff > 0 ? left - diff - 1 : left});
     $(Op.li).addClass('active');
-    $(imce.opCloseLink).css('visibility', 'visible');
+    $(imce.opCloseLink).fadeIn(300);
     imce.vars.op = name;
   }
   Op.func(true);
@@ -366,12 +362,10 @@ opShrink: function(name, effect) {
   var Op = imce.ops[name];
   $(Op.div).stop(true, true)[effect || 'hide']();
   $(Op.li).removeClass('active');
-  $(imce.opCloseLink).css('visibility', 'hidden');
+  $(imce.opCloseLink).hide();
   Op.func(false);
   imce.vars.op = null;
 },
-
-/**************** AJAX OPERATIONS  ********************/
 
 //navigate to dir
 navigate: function(dir) {
@@ -384,6 +378,7 @@ navigate: function(dir) {
   }
   else $.ajax(set);//live load
 },
+
 //ajax navigation settings
 navSet: function (dir, cache) {
   $(imce.tree[dir].li).addClass('loading');
@@ -424,11 +419,10 @@ navUpdate: function(data, dir) {
 navCache: function (dir, newdir) {
   var C = imce.cache[dir] = {'dir': dir, files: imce.el('file-list'), dirsize: imce.el('dir-size').innerHTML, perm: $.extend({}, imce.conf.perm)};
   C.files.id = 'cached-list-'+ dir;
-  imce.el('forms-wrapper').appendChild(C.files);
+  imce.FW.appendChild(C.files);
   imce.invoke('cache', C, newdir);
 },
 
-/**************** UPLOAD  ********************/
 //validate upload form
 uploadValidate: function (data, form, options) {
   var path = data[0].value;
@@ -450,7 +444,6 @@ uploadSettings: function () {
   return {beforeSubmit: imce.uploadValidate, success: function (response) {imce.processResponse(Drupal.parseJson(response));}, complete: function () {imce.fopLoading('upload', false);}, resetForm: true};
 },
 
-/**************** FILE OPS  ********************/
 //validate default ops(delete, thumb, resize)
 fopValidate: function(fop) {
   if (!imce.validateSelCount(1, imce.conf.filenum)) return false;
@@ -510,15 +503,13 @@ fopLoading: function(fop, state) {
   }
 },
 
-/**************** PREVIEW & SEND TO  ********************/
-
 //preview a file.
 setPreview: function (fid) {
   var row, html = '';
   imce.vars.prvfid = fid;
   if (fid && (row = imce.fids[fid])) {
     var width = row.cells[2].innerHTML * 1;
-    html = imce.vars.previewImages && width ? imce.imgHtml(fid, width, row.cells[3].innerHTML) : imce.decode(fid);
+    html = imce.vars.previewImages && width ? imce.imgHtml(fid, width, row.cells[3].innerHTML) : imce.decodePlain(fid);
     html = '<a href="#" onclick="imce.send(\''+ fid +'\'); return false;" title="'+ (imce.vars.prvtitle||'') +'">'+ html +'</a>';
   }
   imce.el('file-preview').innerHTML = html;
@@ -539,8 +530,6 @@ setSendTo: function (title, func) {
   imce.vars.prvtitle = title;
   return imce.opAdd({name: 'sendto', title: title, func: opFunc});
 },
-
-/**************** LOG MESSAGES  ********************/
 
 //move initial page messages into log
 prepareMsgs: function () {
@@ -565,12 +554,13 @@ setMessage: function (msg, type) {
     $box.css({opacity: 0, display: 'block'}).html(msg);
     $box.dequeue();
   });
-  $box.fadeTo(600, 1).fadeTo(1000, 1).fadeOut(400);
+  var q = $box.queue().length, t = imce.vars.msgT || 1000;
+  q = q < 2 ? 1 : q < 3 ? 0.8 : q < 4 ? 0.7 : 0.4;//adjust speed with respect to queue length
+  $box.fadeTo(600 * q, 1).fadeTo(t * q, 1).fadeOut(400 * q);
   $(logs).append(msg);
   return false;
 },
 
-/**************** OTHER HELPER FUNCTIONS  ********************/
 //invoke hooks
 invoke: function (hook) {
   var i, args, func, funcs;
@@ -585,6 +575,7 @@ processResponse: function (response) {
   if (response.data) imce.resData(response.data);
   if (response.messages) imce.resMsgs(response.messages);
 },
+
 //process response data
 resData: function (data) {
   var i, added, removed;
@@ -606,6 +597,7 @@ resData: function (data) {
   imce.conf.dirsize = data.dirsize;
   imce.updateStat();
 },
+
 //set response messages
 resMsgs: function (msgs) {
   for (var type in msgs) for (var i in msgs[type]) {
@@ -615,12 +607,14 @@ resMsgs: function (msgs) {
 
 //return img markup
 imgHtml: function (fid, width, height) {
-  return '<img src="'+ imce.getURL(fid) +'" width="'+ width +'" height="'+ height +'" alt="'+ imce.decode(fid) +'">';
+  return '<img src="'+ imce.getURL(fid) +'" width="'+ width +'" height="'+ height +'" alt="'+ imce.decodePlain(fid) +'">';
 },
+
 //check if the file is an image
 isImage: function (fid) {
   return imce.fids[fid].cells[2].innerHTML * 1;
 },
+
 //find the first non-image in the selection
 getNonImage: function (selected) {
   for (var fid in selected) {
@@ -628,11 +622,13 @@ getNonImage: function (selected) {
   }
   return false;
 },
+
 //validate current selection for images
 validateImage: function () {
   var nonImg = imce.getNonImage(imce.selected);
   return nonImg ? imce.setMessage(Drupal.t('%filename is not an image.', {'%filename': imce.decode(nonImg)}), 'error') : true;
 },
+
 //validate number of selected files
 validateSelCount: function (Min, Max) {
   if (Min && imce.selcount < Min) {
@@ -649,6 +645,7 @@ updateStat: function () {
   imce.el('file-count').innerHTML = imce.findex.length;
   imce.el('dir-size').innerHTML = imce.conf.dirsize;
 },
+
 //serialize selected files. return fids with a colon between them
 serialNames: function () {
   var str = '';
@@ -657,37 +654,44 @@ serialNames: function () {
   }
   return str.substr(1);
 },
+
 //get file url. re-encode & and # for mod rewrite
 getURL: function (fid) {
   var path = (imce.conf.dir == '.' ? '' : imce.conf.dir +'/') + fid;
   return imce.conf.furl + (imce.conf.modfix ? path.replace(/%(23|26)/g, '%25$1') : path);
 },
+
 //el. by id
 el: function (id) {
   return document.getElementById(id);
 },
+
 //find the latest selected fid
 lastFid: function () {
   if (imce.vars.lastfid) return imce.vars.lastfid;
   for (var fid in imce.selected);
   return fid;
 },
+
 //create ajax url
 ajaxURL: function (op, dir) {
   return imce.conf.url + (imce.conf.clean ? '?' :'&') +'jsop='+ op +'&dir='+ (dir||imce.conf.dir);
 },
+
 //fast class check
 hasC: function (el, name) {
   return el.className && (' '+ el.className +' ').indexOf(' '+ name +' ') != -1;
 },
+
 //highlight a single file
 highlight: function (fid) {
   if (imce.vars.prvfid) imce.fileClick(imce.vars.prvfid);
   imce.fileClick(fid);
 },
+
 //process a row
 processRow: function (row) {
-  row.cells[0].innerHTML = imce.decode(row.id);
+  row.cells[0].innerHTML = '<span>' + imce.decodePlain(row.id) + '</span>';
   row.onmousedown = function(e) {
     var e = e||window.event;
     imce.fileClick(this, e.ctrlKey, e.shiftKey);
@@ -698,24 +702,34 @@ processRow: function (row) {
     return false;
   };
 },
+
 //decode urls. uses unescape. can be overridden to use decodeURIComponent
 decode: function (str) {
   return unescape(str);
 },
+
+//decode and convert to plain text
+decodePlain: function (str) {
+  return Drupal.checkPlain(imce.decode(str));
+},
+
 //global ajax error function
 ajaxError: function (e, response, settings, thrown) {
   imce.setMessage(Drupal.ahahError(response, settings.url).replace(/\n/g, '<br />'), 'error');
 },
+
 //convert button elements to standard input buttons
 convertButtons: function(form) {
   $('button:submit', form).each(function(){
     $(this).replaceWith('<input type="submit" value="'+ $(this).text() +'" name="'+ this.name +'" class="form-submit" id="'+ this.id +'" />');
   });
 },
+
 //create element
 newEl: function(name) {
   return document.createElement(name);
 },
+
 //scroll syncronization for section headers
 syncScroll: function(scrlEl, fixEl, bottom) {
   var $fixEl = $(fixEl);
@@ -732,6 +746,7 @@ syncScroll: function(scrlEl, fixEl, bottom) {
     });
   });
 },
+
 //get UI ready. provide backward compatibility.
 updateUI: function() {
   //file urls.
@@ -740,7 +755,7 @@ updateUI: function() {
   var host = location.host;
   var baseurl = location.protocol + '//' + host;
   if (furl.charAt(furl.length - 1) != '/') {
-    furl += '/';
+    furl = imce.conf.furl = furl + '/';
   }
   imce.conf.modfix = imce.conf.clean && furl.indexOf(host + '/system/') > -1;
   if (absurls && !isabs) {
@@ -750,7 +765,7 @@ updateUI: function() {
     imce.conf.furl = furl.substr(baseurl.length);
   }
   //convert button elements to input elements.
-  imce.convertButtons(imce.el('forms-wrapper'));
+  imce.convertButtons(imce.FW);
   //ops-list
   $('#ops-list').removeClass('tabs secondary').addClass('clear-block clearfix');
   imce.opCloseLink = $(imce.newEl('a')).attr({id: 'op-close-link', href: '#', title: Drupal.t('Close')}).click(function() {
@@ -759,7 +774,7 @@ updateUI: function() {
   }).appendTo('#op-contents')[0];
   //navigation-header
   if (!$('#navigation-header').size()) {
-    $('#navigation-wrapper > .navigation-text').attr('id', 'navigation-header').wrapInner('<span></span>');
+    $(imce.NW).children('.navigation-text').attr('id', 'navigation-header').wrapInner('<span></span>');
   }
   //log
   $('#log-prv-wrapper').before($('#log-prv-wrapper > #preview-wrapper')).remove();
@@ -767,30 +782,24 @@ updateUI: function() {
   //content resizer
   $('#content-resizer').remove();
   //message-box
-  imce.msgBox = imce.el('message-box') || $('<div id="message-box"></div>').prependTo('#imce-content')[0];
-  //help box & ie fix
+  imce.msgBox = imce.el('message-box') || $(imce.newEl('div')).attr('id', 'message-box').prependTo('#imce-content')[0];
+  //create help tab
   var $hbox = $('#help-box');
   $hbox.is('a') && $hbox.replaceWith($(imce.newEl('div')).attr('id', 'help-box').append($hbox.children()));
-  var $htitle = $('#help-box-title');
-  if ($.browser.msie) {
-    $('html').addClass('ie');
-    if (parseFloat($.browser.version) < 8) {
-      var $hcontent = $('#help-box-content');
-      $hcontent.add($htitle).hover(function() {
-        $hcontent.addClass('hover');
-      }, function() {
-        $hcontent.removeClass('hover');
-      });
-      $('html').addClass('ie-7');
-    }
-  }
-  !$htitle.children('span').size() && $htitle.wrapInner('<span></span>');
+  imce.hooks.load.push(function() {
+    imce.opAdd({name: 'help', title: $('#help-box-title').remove().text(), content: $('#help-box').show()});
+  });
+  //add ie classes
+  $.browser.msie && $('html').addClass('ie') && parseFloat($.browser.version) < 8 && $('html').addClass('ie-7');
+  // enable box view for file list
+  imce.vars.boxW && imce.boxView();
   //scrolling file list
   imce.syncScroll(imce.SBW, '#file-header-wrapper');
   imce.syncScroll(imce.SBW, '#dir-stat', true);
   //scrolling directory tree
-  imce.syncScroll('#navigation-wrapper', '#navigation-header');
+  imce.syncScroll(imce.NW, '#navigation-header');
 }
+
 };
 
 //initiate

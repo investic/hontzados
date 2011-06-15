@@ -1,4 +1,3 @@
-$Id: README.txt,v 1.2.2.2.2.5 2010/02/03 07:09:46 danielb Exp $
 
 Node Export README
 

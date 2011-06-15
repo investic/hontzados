@@ -1,5 +1,4 @@
 <?php
-// $Id: space_user.inc,v 1.1.2.7 2010/07/28 15:13:25 yhahn Exp $
 
 /**
  * User integration for Spaces. 

@@ -1,4 +1,3 @@
-// $Id: README.txt,v 1.12.2.3 2010/06/02 08:33:21 ufku Exp $
 
 IMCE
 http://drupal.org/project/imce
@@ -54,7 +53,7 @@ Having nothing to do with IMCE, it appeared many times in issue queues. This is 
 - Upload does not work in Opera
 Jquery form plugin before version 2.09 has problems with Opera 9.2+. Replace Drupal's misc/jquery.form.js with the one at http://jquery.malsup.com/form/#download
 
-- IMCE may have problem working with Google Analytics and Secure pages modules. Just make sure to add imce* path to the exceptions list of these modules.
+- IMCE may have problem working with Google Analytics and Secure pages modules. Just make sure to add *imce* path to the exceptions list of these modules.
 
 
 INTEGRATION METHODS
@@ -68,8 +67,8 @@ Install http://drupal.org/project/imce_wysiwyg bridge module and enable IMCE as 
 BUEditor:
 IMCE is integrated in image and link dialogs.
 
-FCKeditor(without WYSIWYG): 
-Fckeditor profile->File browser settings->IMCE integration
+(F)CKeditor(without WYSIWYG): 
+(F)ckeditor profile->File browser settings->IMCE integration
 
 If your application is not one of the above, please keep reading in order to learn how to integrate IMCE.
 

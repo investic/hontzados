@@ -1,5 +1,4 @@
 <?php
-// $Id: og_vocab.services.inc,v 1.1.2.1 2008/12/25 15:35:43 amitaibu Exp $
 
 /**
  * @file

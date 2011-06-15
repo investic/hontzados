@@ -1,4 +1,3 @@
-; $Id: spaces.info,v 1.1.4.2.2.1.2.2 2009/12/14 23:19:35 yhahn Exp $
 core = "6.x"
 dependencies[] = "ctools"
 dependencies[] = "features"
@@ -6,9 +5,9 @@ description = "Provides a customizable spaces layer on top of Drupal."
 name = "Spaces"
 package = "Spaces"
 
-; Information added by drupal.org packaging script on 2010-08-23
-version = "6.x-3.0"
+; Information added by drupal.org packaging script on 2011-03-02
+version = "6.x-3.1"
 core = "6.x"
 project = "spaces"
-datestamp = "1282589208"
+datestamp = "1299099068"
 

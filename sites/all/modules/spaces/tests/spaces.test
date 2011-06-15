@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces.test,v 1.2.4.1.4.9 2010/08/20 15:45:21 yhahn Exp $
 
 /**
  * Unit tests for variable controller
@@ -384,5 +383,88 @@ class SpacesMenuTestCase extends DrupalWebTestCase {
 
     $changed = $this->getMenuOrder();
     $this->assert($changed == array_reverse($links), t('Menu changes successfully displayed'));
+  }
+}
+
+/**
+ * Test for the Views acces plugin
+ */
+class ViewsAccessTestCase extends DrupalWebTestCase {
+  /**
+   * Test info.
+   */
+  public function getInfo() {
+    return array(
+      'name' => t('Spaces Views Access'),
+      'description' => t('Test the Spaces access plugin for views.') ,
+      'group' => t('Spaces'),
+    );
+  }
+
+  /**
+   * Set up test.
+   */
+  public function setUp() {
+    parent::setUp(
+      'ctools',
+      'features',
+      'features_test',
+      'spaces',
+      'spaces_test',
+      'views',
+      'views_ui'
+    );
+
+    // Create basic user 
+    $this->basic_user = $this->drupalCreateUser(array(
+      'access content'));
+
+    // Create and login admin user
+    $this->admin_user = $this->drupalCreateUser(array(
+      'administer site configuration',
+      'administer blocks',
+      'administer menu',
+      'administer views',
+      'use PHP for block visibility'));
+    $this->drupalLogin($this->admin_user);
+
+    $this->drupalGet('admin/build/views/export/comments_recent');
+    $elems = $this->xpath('//textarea[@id="edit-code"]');
+
+    // Within the exported view locate the page display and change the access
+    // plugin.
+    $view_code = explode("\n", (string)$elems[0]);
+    foreach ($view_code as $n => $line) {
+      if (strpos($line, '$handler = $view->new_display(\'page\'') === 0) {
+        $mark = $n + 1;
+        break;
+      }
+    }
+
+    $insert = '$handler->override_option("access", array(
+                "type" => "spaces_feature", 
+                "spaces_feature" => "spaces_test", 
+                "perm" => "administer site configuration",
+              ));';
+
+    array_splice($view_code, $mark, 0, $insert);
+
+    $edit = array(
+      'name' => 'comments_recent_spaces',
+      'view' => implode("\n", $view_code),
+    );
+    $this->drupalPost('admin/build/views/import', $edit, t('Import'));
+    $this->drupalPost(null, array(), t('Save'));
+    
+  }
+
+  public function testAccessPlugin() {
+    $this->drupalLogin($this->basic_user);
+    $this->drupalGet('comments/recent');
+    $this->assertResponse('403', t('Unauthorized user blocked'));
+
+    $this->drupalLogin($this->admin_user);
+    $this->drupalGet('comments/recent');
+    $this->assertResponse('200', t('Authorized user allowed'));
   }
 }

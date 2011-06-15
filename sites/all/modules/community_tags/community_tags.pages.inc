@@ -1,5 +1,4 @@
 <?php
-// $Id: community_tags.pages.inc,v 1.1.2.4 2009/08/29 17:32:45 entrigan Exp $
 
 /**
  * @file
@@ -15,28 +14,48 @@
  * Quick tag form.
  */
 function community_tags_form($form_state, $edit, $title = NULL) {
-  $form['cloud'] = array(
-    '#type' => 'markup',
-    '#title' => t('All tags'),
-    '#value' => $edit['cloud'],
-  );
-  
+  $vocabulary = taxonomy_vocabulary_load($edit['vid']);
+
+  if($edit['cloud']) {
+    if($edit['multiple'] > 1) {
+      // displaying more than 1 form so need to differentiate in headings
+      $all_title = t('All !name tags', array('!name' => $vocabulary->name));
+    }
+    else {
+      $all_title = t('All tags');
+    }
+
+    $form['cloud'] = array(
+      '#type' => 'markup',
+      '#title' => $all_title,
+      '#value' => $edit['cloud'],
+    );
+  }
+
   $access = user_access('tag content');
+
+  if($edit['multiple'] > 1) {
+    // displaying more than 1 form so need to differentiate in headings
+    $my_title = t('My !name tags', array('!name' => $vocabulary->name));
+  }
+  else {
+    $my_title = t('My tags');
+  }
 
   $form['tags'] = array(
     '#type' => 'textfield',
-    '#title' => t('My tags'),
+    '#title' => $my_title,
     '#maxlength' => 100,
     '#default_value' => $edit['tags'],
     '#required' => FALSE,
     '#autocomplete_path' => 'taxonomy/autocomplete/'. $edit['vid'],
-    '#attributes' => array('class' => 'form-tags'),
+    '#attributes' => array('class' => 'form-tags form-tags-'. $edit['vid']),
     '#access' => $access,
   );
   if ($edit['inline']) {
     $form['tags']['#size'] = 20;
   }
-  
+
   if (!$access) {
     $destination = drupal_get_destination();
     $form['login'] = array(
@@ -50,12 +69,12 @@ function community_tags_form($form_state, $edit, $title = NULL) {
     '#value' => t('Save'),
     '#access' => $access,
   );
-  
+
   $form['node'] = array(
     '#type' => 'value',
     '#value' => $edit['node'],
   );
-  
+
   $form['nid'] = array(
     '#type' => 'hidden',
     '#title' => t('NID'),
@@ -63,20 +82,13 @@ function community_tags_form($form_state, $edit, $title = NULL) {
   );
 
   $form['vid'] = array(
-    '#type' => 'value',
-    '#value' => $edit['vid'],
+    '#type' => 'hidden',
+    '#default_value' => $edit['vid'],
   );
 
   return $form;
-}
+  // drupal_add_js(array('communityTags' => array('n_'. $node->nid => array('v_'. $vid => array('tags' => $names, 'url' => url('community-tags/js/'. $node->nid .'/'. $vid), 'add' => t('Add'), 'token' => drupal_get_token('community_tags_form'))))), 'setting');
 
-/**
- * Validate the quick tag form.
- */
-function community_tags_form_validate($form, &$form_state) {
-  if ($form_state['values']['tags'] == '') {
-    form_set_error('tags', t('You must enter at least one tag.'));
-  }
 }
 
 /**
@@ -86,7 +98,7 @@ function community_tags_form_submit($form, &$form_state) {
   global $user;
   community_tags_taxonomy_node_save($form_state['values']['node'], array('tags' => array($form_state['values']['vid'] => $form_state['values']['tags'])), FALSE, $user->uid);
 
-  $form_state['redirect'] = 'node/'. $form_state['values']['nid']; 
+  $form_state['redirect'] = 'node/'. $form_state['values']['nid'];
 }
 
 /**
@@ -94,7 +106,7 @@ function community_tags_form_submit($form, &$form_state) {
  * @ingroup themeable
  */
 function theme_community_tags_form($form) {
-  $output = theme('form_element', array('#title' => t('All tags')), drupal_render($form['cloud']));
+  $output = theme('form_element', array('#title' => $form['cloud']['#title']), drupal_render($form['cloud']));
 
   $output .= drupal_render($form);
 
@@ -106,43 +118,11 @@ function theme_community_tags_form($form) {
 }
 
 /**
- * Menu callback: 
+ * Menu callback:
  */
 function community_tags_mypage($uid = NULL) {
   $uid = isset($uid) ? $uid : $GLOBALS['uid'];
 
   _community_tags_get_tag_result('user', 100, $uid);
-}
-
-/**
- * Form builder; Builds the settings form.
- *
- * @ingroup forms
- */
-function community_tags_settings() {
-  $form = array();
-
-  community_tags_rehash();
-
-  // Build list of available free-tagging vocabularies
-  $options = array();
-  $vocabs = db_query('SELECT v.vid, v.name FROM {vocabulary} v WHERE v.tags = 1 ORDER BY v.weight, v.name');
-  while ($vocabulary = db_fetch_object($vocabs)) {
-    $options[$vocabulary->vid] = $vocabulary->name;
-  }
-  if ($options) {
-    $form['community_tags_vocabularies'] = array(
-      '#type' => 'select',
-      '#multiple' => TRUE,
-      '#title' => t('Community vocabularies'),
-      '#default_value' => variable_get('community_tags_vocabularies', array()),
-      '#options' => $options,
-      '#description' => t('Which vocabularies should community tagging use? Note: only one community tagged vocabulary per node type is supported.'),
-    );
-  }
-
-  $form = system_settings_form($form);
-
-  return $form;
 }
 

@@ -1,5 +1,4 @@
 <?php
-// $Id: space_type.inc,v 1.1.2.2 2010/01/10 20:46:16 yhahn Exp $
 
 /**
  * Common functionality for space types that implement access, routing,

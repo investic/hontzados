@@ -1,5 +1,4 @@
 <?php
-// $Id: community_tags.install,v 1.9 2008/07/18 03:32:55 herc Exp $
 
 /**
  * @file
@@ -12,7 +11,7 @@
 function community_tags_install() {
   // Install schema
   drupal_install_schema('community_tags');
-  
+
   // Drop module weight so we act after taxonomy.
   $weight = (int)db_result(db_query("SELECT weight FROM {system} WHERE name = 'taxonomy'"));
   db_query("UPDATE {system} SET weight = %d WHERE name = 'community_tags'", $weight + 1);
@@ -40,6 +39,7 @@ function community_tags_schema() {
       'tid' => array('tid'),
       'nid' => array('nid'),
       'uid' => array('uid'),
+      'tid_nid' => array('tid', 'nid'),
     ),
     'primary key' => array('tid', 'uid', 'nid'),
   );
@@ -52,7 +52,6 @@ function community_tags_schema() {
 function community_tags_update_1() {
   $ret = array();
   db_add_index($ret, 'community_tags', 'tid', array('tid'));
-  community_tags_rehash(TRUE);
   return $ret;
 }
 
@@ -60,5 +59,13 @@ function community_tags_update_1() {
  * Implementation of hook_enable().
  */
 function community_tags_enable() {
-  community_tags_rehash();
+}
+
+/**
+ * Update: Add tid_nid 2 column index.
+ */
+function community_tags_update_6001() {
+  $ret = array();
+  db_add_index($ret, 'community_tags', 'tid_nid', array('tid', 'nid'));
+  return $ret;
 }

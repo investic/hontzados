@@ -1,5 +1,4 @@
 <?php
-// $Id: space_type_purl.inc,v 1.1.2.5 2010/08/11 02:17:46 yhahn Exp $
 
 /**
  * Common functionality for space types that use a PURL modifier to trigger

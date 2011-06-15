@@ -1,4 +1,3 @@
-$Id: API.txt,v 1.1.2.1 2010/02/10 20:42:44 yhahn Exp $
 
 Spaces 3.x API
 --------------
@@ -22,7 +21,7 @@ the main page callback is executed.
 What a space activation looks like in code:
 
     // Loads space class for user uid = 5.
-    $space = spaces_get_space('user', 5);
+    $space = spaces_load('user', 5);
 
     // Makes this the active space for the page.
     $space->activate();

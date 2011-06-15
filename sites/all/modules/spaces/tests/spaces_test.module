@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_test.module,v 1.1.2.3 2010/08/02 21:01:45 jmiccolis Exp $
 
 include_once('spaces_test.features.inc');
 

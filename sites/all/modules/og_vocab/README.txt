@@ -1,4 +1,3 @@
-/* $Id: README.txt,v 1.1.2.4 2009/02/18 10:17:34 amitaibu Exp $ */
 
 Description
 -----------------

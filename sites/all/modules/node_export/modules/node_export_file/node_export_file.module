@@ -1,5 +1,4 @@
 <?php
-// $Id: node_export_file.module,v 1.1.2.6 2010/02/12 17:37:02 jamesandres Exp $
 
 /**
  * @file
@@ -475,7 +474,7 @@ function _node_export_file_import_file(&$file) {
   }
   // Unknown error
   else {
-    drupal_set_message(t("Unknown error occured attempting to import file."), 'error');
+    drupal_set_message(t("Unknown error occurred attempting to import file: {$file->filepath}"), 'error');
     return FALSE;
   }
 

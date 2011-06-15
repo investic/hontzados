@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces.api.php,v 1.1.2.1 2009/12/14 23:19:35 yhahn Exp $
 
 /**
  * @file

@@ -1,5 +1,4 @@
 <?php
-// $Id: views_or_handler_argument.inc,v 1.4 2009/08/12 19:15:27 darrenoh Exp $
 
 /**
  * @file

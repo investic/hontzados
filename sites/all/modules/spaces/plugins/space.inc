@@ -1,5 +1,4 @@
 <?php
-// $Id: space.inc,v 1.1.2.1 2009/12/14 23:19:16 yhahn Exp $
 
 /**
  * Base class describing a space.

@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces.overrides.inc,v 1.1.2.13 2010/08/09 17:48:33 jmiccolis Exp $
 
 /**
  * Implementation of hook_context_load_alter().

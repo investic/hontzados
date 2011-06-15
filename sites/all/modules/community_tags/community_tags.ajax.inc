@@ -1,5 +1,4 @@
 <?php
-// $Id: community_tags.ajax.inc,v 1.1.2.3 2008/08/23 03:04:47 herc Exp $
 
 /**
  * @file
@@ -15,21 +14,28 @@
 /**
  * Callback for the JS tagger.
  */
-function community_tags_from_js($node) {
+function community_tags_from_js($node, $vid = NULL) {
   global $user;
 
-  $tags = (isset($_POST['tags']) && is_array($_POST['tags'])) ? $_POST['tags'] : array();
+  if ($node && isset($_POST['token']) && drupal_valid_token($_POST['token'], 'community_tags_form')) {
+    $tags = (isset($_POST['tags']) && is_array($_POST['tags'])) ? $_POST['tags'] : array();
 
-  // Merge in new tag and save.
-  $tags = array_unique(array_merge($tags, drupal_explode_tags($_POST['add'])));
-  $vid = array_shift(community_tags_vids_for_node($node));
-  community_tags_taxonomy_node_save($node, array('tags' => array($vid => $tags)), FALSE, $user->uid);
+    // Merge in new tag and save.
+    $tags = array_unique(array_merge($tags, drupal_explode_tags($_POST['add'])));
 
-  // Fetch updated list.
-  $tags = community_tags_flatten(community_tags_get_user_node_tags($user->uid, $node->nid));
+    //There should always be $vid, but if not, this will make a best guess.
+    if(!$vid){
+      $vid = array_shift(community_tags_vids_for_node($node));
+    }
 
-  // Output JSON.
-  print drupal_json(array('status' => TRUE, 'tags' => $tags, 'sequence' => $_POST['sequence']));
+    community_tags_taxonomy_node_save($node, array('tags' => array($vid => $tags)), FALSE, $user->uid);
+
+    // Fetch updated list.
+    $tags = community_tags_flatten(community_tags_get_user_node_tags($user->uid, $node->nid, $vid));
+
+    // Output JSON.
+    print drupal_json(array('status' => TRUE, 'tags' => $tags, 'sequence' => $_POST['sequence']));
+  }
 }
 
 /**

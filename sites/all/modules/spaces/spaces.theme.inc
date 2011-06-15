@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces.theme.inc,v 1.1.2.3.2.5 2010/08/05 06:22:33 yhahn Exp $
 
 /**
  * Theme function for spaces_features_form().

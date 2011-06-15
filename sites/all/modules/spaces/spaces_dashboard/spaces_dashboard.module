@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_dashboard.module,v 1.15.2.33 2010/08/02 19:58:40 yhahn Exp $
 
 include_once('spaces_dashboard.features.inc');
 

@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_handler_filter_spaces_feature.inc,v 1.1.2.1.2.2.2.3 2010/01/10 07:12:36 yhahn Exp $
 
 /**
  * Filter to only show node types associated with current feature.

@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_user.install,v 1.1.2.1 2010/01/12 21:40:07 jmiccolis Exp $
 
 /**
  * Implementation of hook_enable().

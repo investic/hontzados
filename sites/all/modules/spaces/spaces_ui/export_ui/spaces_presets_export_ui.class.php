@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_presets_export_ui.class.php,v 1.1.2.1 2010/08/06 16:44:46 yhahn Exp $
 
 /**
  * CTools export UI extending class.

@@ -1,5 +1,4 @@
 <?php
-// $Id: space_og.inc,v 1.1.2.11 2010/08/05 06:12:41 yhahn Exp $
 
 /**
  * Organic groups integration for Spaces.

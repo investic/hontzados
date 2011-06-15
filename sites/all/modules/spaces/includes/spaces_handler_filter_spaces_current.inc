@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_handler_filter_spaces_current.inc,v 1.1.2.2.2.2.2.3 2009/12/17 22:33:05 alexb Exp $
 
 /**
  * Spaces view filter handler.

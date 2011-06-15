@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces.install,v 1.1.4.6.2.3.2.7 2010/08/06 16:37:14 yhahn Exp $
 
 /**
  * Implementaton of hook_install().

@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces.views.inc,v 1.1.2.6.2.2.2.5 2010/08/09 21:49:31 yhahn Exp $
 
 /**
  * Implementation of hook_views_plugins().

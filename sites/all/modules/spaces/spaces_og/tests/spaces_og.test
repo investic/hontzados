@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_og.test,v 1.1.2.12 2010/08/11 22:40:41 jmiccolis Exp $
 
 /**
  * Base test class for Spaces OG tests.
@@ -321,15 +320,22 @@ class SpacesOGTestFeatures extends SpacesOGTestCase {
     // Verify that feature is off site-wide and off for group. node/add/features-test
     // should not be available.
     $this->drupalGet('features');
-    $this->assertPattern('/<select name="spaces_features\[features_test(.*?)value="0" selected="selected"(.*?)<\/select>/');
+    $elems = $this->xpath('//select[@name="spaces_features[features_test]"]/option[@selected="selected"]');
+    $this->assert('Disabled' == (string)$elems[0]);
+
     $this->drupalGet('node/add');
     $this->assertNoText('Features test');
+
     $this->drupalGet('node/add/features-test');
     $this->assertResponse(403);
+
     $this->drupalGet('group-a/node/1/features');
-    $this->assertPattern('/<select name="spaces_features\[features_test(.*?)value="0" selected="selected"(.*?)<\/select>/');
+    $elems = $this->xpath('//select[@name="spaces_features[features_test]"]/option[@selected="selected"]');
+    $this->assert('Disabled' == (string)$elems[0]);
+
     $this->drupalGet('group-a/node/add');
     $this->assertNoText('Features test');
+
     $this->drupalGet('group-a/node/add/features-test');
     $this->assertResponse(403);
 
@@ -339,35 +345,35 @@ class SpacesOGTestFeatures extends SpacesOGTestCase {
     // 'group-a/features' will redirect us to 'features'.
     $this->drupalPost('group-a/features', array('spaces_features[features_test]' => '1'), 'Save configuration');
     $this->assertText('The configuration options have been saved.');
+
     $this->drupalGet('node/add');
     $this->assertText('Testing: Features');
+
     $this->drupalPost('node/add/features-test', array('title' => 'Post outside of Group'), 'Save');
     $this->assertText('Testing: Features Post outside of Group has been created.');
 
-    // features_test feature in group is now on, too - it relies on site-wide feature
-    // value as a default. Turn it off.
+    // Turn off site wide features_test feature.
+    $this->drupalPost('features', array('spaces_features[features_test]' => '0'), 'Save configuration');
     $this->drupalGet('group-a/node/1/features');
-    $this->assertPattern('/<select name="spaces_features\[features_test(.*?)value="1" selected="selected"(.*?)<\/select>/');
-    $this->drupalPost('group-a/node/1/features', array('spaces_features[features_test]' => '0'), 'Save for Group A');
-    $this->drupalGet('group-a/node/add');
-    $this->assertNoText('Testing: Features');
-    $this->drupalGet('group-a/node/add/features-test');
+    $elems = $this->xpath('//select[@name="spaces_features[features_test]"]/option[@selected="selected"]');
+    $this->assert('Disabled' == (string)$elems[0]);
+
+    $this->drupalGet('node/add/features-test');
     $this->assertResponse(403);
 
-    // Turn on features_test feature for group again and post a features_test post.
+    // Turn on features_test feature for group and post a features_test post.
     $this->drupalPost('group-a/node/1/features', array('spaces_features[features_test]' => '1'), 'Save for Group A');
+    $elems = $this->xpath('//select[@name="spaces_features[features_test]"]/option[@selected="selected"]');
+    $this->assert('Enabled' == (string)$elems[0]);
+
+    $this->drupalGet('group-a/node/add');
+    $this->assertText('Testing: Features');
+
     $this->drupalPost('group-a/node/add/features-test', array('title' => 'Post in Group space'), 'Save');
     $this->assertText('Testing: Features Post in Group space has been created.');
 
-    // Turn off site wide features_test feature, group features_test feature should still be
-    // enabled.
-    $this->drupalPost('features', array('spaces_features[features_test]' => '0'), 'Save configuration');
-    $this->drupalGet('group-a/node/1/features');
-    $this->assertPattern('/<select name="spaces_features\[features_test(.*?)value="1" selected="selected"(.*?)<\/select>/');
     $this->drupalGet('node/add/features-test');
     $this->assertResponse(403);
-    $this->drupalGet('group-a/node/add/features-test');
-    $this->assertResponse(200);
   }
 }
 
@@ -658,6 +664,7 @@ class SpacesOGTestRouter extends SpacesOGTestCase {
       'purl[value]' => 'group-b',
     );
     $this->drupalPost('node/add/group', $edit, 'Save');
+    $this->drupalPost('node/1/features', array('spaces_features[features_test]' => '1'), 'Save for Group A');
 
     // Log in as simple user, join and post a features_test .
     $this->loginSimpleUser();

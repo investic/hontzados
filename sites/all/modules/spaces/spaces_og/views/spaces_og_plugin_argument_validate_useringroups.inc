@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_og_plugin_argument_validate_useringroups.inc,v 1.1.2.1 2010/01/12 12:33:32 yhahn Exp $
 
 /**
  * Validate whether an argument is a valid user that is a member of one

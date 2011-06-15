@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_handler_field_node.inc,v 1.1.2.1 2010/08/09 21:49:31 yhahn Exp $
 
 class spaces_handler_field_node extends views_handler_field_node {
   /**

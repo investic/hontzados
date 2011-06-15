@@ -1,4 +1,3 @@
-$Id: README.txt,v 1.1.2.1 2010/07/02 17:23:11 jmiccolis Exp $
 
 Spaces Custom Text
 ------------------

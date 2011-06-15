@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_dashboard.test,v 1.1.2.6 2010/08/02 14:53:53 jmiccolis Exp $
 
 class SpacesDashboardTestCase extends DrupalWebTestCase {
   /**

@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_controller_customtext.inc,v 1.1.2.1 2009/12/19 18:31:55 yhahn Exp $
 
 /**
  * Customtext variable controller.

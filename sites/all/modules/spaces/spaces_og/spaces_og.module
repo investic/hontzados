@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_og.module,v 1.1.2.29.2.24.2.26 2010/08/23 18:43:35 yhahn Exp $
 
 /**
  * Implementation of hook_ctools_plugin_api().
@@ -337,6 +336,16 @@ function spaces_og_form_node_delete_confirm_alter(&$form, $form_state) {
   $node = node_load($form['nid']['#value']);
   if (og_is_group_type($node->type)) {
     $form['#submit'][] = '_spaces_og_node_delete_confirm_submit';
+  }
+  elseif (og_is_group_post_type($node->type)) {
+    $space = spaces_get_space();
+    if ($space && $space->type == 'og') {
+      $preset_val = $space->controllers->variable->get('site_frontpage', 'preset');
+      $space_val = $space->controllers->variable->get('site_frontpage', 'space');
+      if (!empty($preset_val) || !empty($space_val)) {
+        $form['#redirect'] = url('<front>', array('absolute' => TRUE,'purl' => array('provider' => 'spaces_og', 'id' => $space->id)));
+      }
+    }
   }
 }
 

@@ -1,4 +1,3 @@
-$Id: README.txt,v 1.3 2009/05/24 06:06:00 darrenoh Exp $
 
 Views Or allows Views to combine filters with OR and fields with COALESCE.
 

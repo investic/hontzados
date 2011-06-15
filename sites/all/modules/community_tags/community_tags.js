@@ -1,4 +1,3 @@
-// $Id: community_tags.js,v 1.4.2.5 2009/09/15 04:04:11 entrigan Exp $
 
 Drupal.communityTags = {};
 
@@ -9,18 +8,18 @@ Drupal.communityTags.checkPlain = function (text) {
              .replace('\n', '<br />');
 }
 
-Drupal.serialize = function (data, prefix) {
+Drupal.communityTags.serialize = function (data, prefix) {
   prefix = prefix || '';
   var out = '';
   for (i in data) {
     var name = prefix.length ? (prefix +'[' + i +']') : i;
     if (out.length) out += '&';
     if (typeof data[i] == 'object') {
-      out += Drupal.serialize(data[i], name);
+      out += Drupal.communityTags.serialize(data[i], name);
     }
     else {
       out += name +'=';
-      out += Drupal.encodeURIComponent(data[i]);
+      out += encodeURIComponent(data[i]);
     }
   }
   return out;
@@ -35,6 +34,8 @@ Drupal.behaviors.communityTags = function(context) {
       // Fetch settings.
       var nid = $('input[name=nid]', this.form).val();
       var o = Drupal.settings.communityTags['n_' + nid];
+      var vid = $('input[name=vid]', this.form).val();
+      var o = Drupal.settings.communityTags['n_' + nid]['v_' + vid];
 
       var sequence = 0;
 
@@ -44,7 +45,7 @@ Drupal.behaviors.communityTags = function(context) {
       // Prepare the add Ajax handler and add the button.
       var addHandler = function () {
         // Send existing tags and new tag string.
-        $.post(o.url, Drupal.serialize({ sequence: ++sequence, tags: o.tags, add: textfield[0].value }), function (data) {
+        $.post(o.url, Drupal.communityTags.serialize({ sequence: ++sequence, tags: o.tags, add: textfield[0].value, token: o.token }), function (data) {
           data = Drupal.parseJson(data);
           if (data.status && sequence == data.sequence) {
             o.tags = data.tags;
@@ -56,7 +57,7 @@ Drupal.behaviors.communityTags = function(context) {
         o.tags.push(textfield[0].value);
         o.tags.sort(function (a,b) { a = a.toLowerCase(); b = b.toLowerCase(); return (a>b) ? 1 : (a<b) ? -1 : 0; });
         updateList();
-        
+
         // Clear field and focus it.
         textfield.val('').focus();
       };
@@ -71,7 +72,7 @@ Drupal.behaviors.communityTags = function(context) {
         updateList();
 
         // Send new tag list.
-        $.post(o.url, Drupal.serialize({ sequence: ++sequence, tags: o.tags, add: '' }), function (data) {
+        $.post(o.url, Drupal.communityTags.serialize({ sequence: ++sequence, tags: o.tags, add: '', token: o.token }), function (data) {
           data = Drupal.parseJson(data);
           if (data.status && sequence == data.sequence) {
             o.tags = data.tags;
@@ -89,6 +90,14 @@ Drupal.behaviors.communityTags = function(context) {
         for (i in o.tags) {
           list.append('<li key="'+ Drupal.communityTags.checkPlain(i) +'">'+ Drupal.communityTags.checkPlain(o.tags[i]) +'</li>');
         }
+        $("li", list).hover(
+          function () {
+            $(this).addClass('hover');
+          },
+          function () {
+            $(this).removeClass('hover');
+          }
+        );
         $('li', list).click(deleteHandler);
       }
 

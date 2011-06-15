@@ -1,5 +1,4 @@
 <?php
-// $Id: community_tags.views.inc,v 1.1.2.1 2009/08/27 06:30:04 entrigan Exp $
 
 function community_tags_views_data()
 {
@@ -72,25 +71,25 @@ function community_tags_views_data()
           'click sortable'=>TRUE,
           ),
         'sort'=> array (
-          'handler'=>'views_handler_sort_numeric',
+          'handler'=>'views_handler_sort',
           ),
         'filter'=> array (
           'handler'=>'views_handler_filter_numeric',
           ),
         'argument'=> array (
           'handler'=>'views_handler_argument_numeric',
-          ),
+        ),
+        'relationship'=> array (
+          'base' => 'node',
+          'base field' => 'nid',
+          'relationship field' => 'nid',
+          'label' => t('Community Taxonomy Tagged Node'),
+        ),
         ),
 
       'tid'=> array (
         'title'=>t('Tag ID'),
         'help'=>t('The TID of the Tag'),
-         'relationship'=> array (
-          'base'=>'term_data',
-          'base field'=>'tid',
-          'relationship field'=>'tid',
-          'label'=>t('user flagged content'),
-          ),
         'field'=> array (
           'handler'=>'views_handler_field_numeric',
           'click sortable'=>TRUE,

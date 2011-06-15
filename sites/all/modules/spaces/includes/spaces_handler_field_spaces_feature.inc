@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_handler_field_spaces_feature.inc,v 1.1.2.1.2.1.2.5 2010/07/30 03:29:11 yhahn Exp $
 
 /**
  * Field handler to translate a node type into its spaces feature.

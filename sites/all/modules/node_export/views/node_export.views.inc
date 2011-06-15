@@ -1,5 +1,4 @@
 <?php
-// $Id: node_export.views.inc,v 1.1.2.6 2010/01/26 03:03:39 danielb Exp $
 
 /**
  * @file

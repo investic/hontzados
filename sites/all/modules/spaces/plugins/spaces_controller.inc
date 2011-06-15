@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_controller.inc,v 1.1.2.4 2010/07/30 16:56:50 jmiccolis Exp $
 
 /**
  * Abstract base class for a spaces controller. Classes that extend

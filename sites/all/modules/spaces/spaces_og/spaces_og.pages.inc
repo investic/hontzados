@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_og.pages.inc,v 1.1.2.8 2010/08/06 16:44:26 yhahn Exp $
 
 /**
  * Form for modifying a user's OG subscriptions quickly.

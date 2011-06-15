@@ -1,5 +1,4 @@
 <?php
-// $Id: imce.page.inc,v 1.1.2.6 2010/06/18 13:00:20 ufku Exp $
 
 /**
  * @file
@@ -618,7 +617,7 @@ function imce_validate_all(&$file, $imce) {
   //and scaling it may exploit system memory.
   $errors = imce_validate_filesize($file, $imce['filesize']);
   //image resolution validation
-  if (empty($errors)) {
+  if (empty($errors) && preg_match('/\.(png|gif|jpe?g)$/i', $file->filename)) {
     $errors = array_merge($errors, file_validate_image_resolution($file, $imce['dimensions']));
   }
   //directory quota validation
@@ -718,7 +717,8 @@ function imce_initiate_profile($user) {
       $imce['url'] = url($_GET['q']);
       $imce['clean'] = variable_get('clean_url', 0) == 1;
       $imce['absurls'] = variable_get('imce_settings_absurls', 0) == 1;
-      $imce['furl'] = file_create_url('');
+      $private = variable_get('file_downloads', '') == FILE_DOWNLOADS_PRIVATE;
+      $imce['furl'] = $private ? url('system/files') : base_path() . file_directory_path();
       $imce['filesize'] *= 1048576;//convert from Mb to byte
       $imce['quota'] *= 1048576;
       $imce['tuquota'] *= 1048576;

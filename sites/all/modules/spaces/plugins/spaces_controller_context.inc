@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_controller_context.inc,v 1.1.2.6 2010/08/05 03:55:48 yhahn Exp $
 
 /**
  * Context controller.

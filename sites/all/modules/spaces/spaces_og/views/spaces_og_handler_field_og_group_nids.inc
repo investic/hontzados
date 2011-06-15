@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_og_handler_field_og_group_nids.inc,v 1.1.2.1 2010/08/09 21:49:32 yhahn Exp $
 
 class spaces_og_handler_field_og_group_nids extends og_views_handler_field_og_group_nids {
   /**

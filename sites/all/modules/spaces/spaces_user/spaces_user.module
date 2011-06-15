@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_user.module,v 1.1.2.10.2.8.2.11 2010/08/06 16:46:25 yhahn Exp $
 
 /**
  * Implementation of hook_init().

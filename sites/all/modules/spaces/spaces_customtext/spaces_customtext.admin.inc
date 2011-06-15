@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_customtext.admin.inc,v 1.1.2.2 2010/07/30 03:29:11 yhahn Exp $
 
 /**
  * System settings form for custom text strings.
@@ -100,7 +99,7 @@ function spaces_customtext_feature_strings($feature) {
     }
 
     // Views.
-    if ($map = features_get_component_map('node')) {
+    if ($map = features_get_component_map('views')) {
       foreach ($map as $view_name => $component_features) {
         if (in_array($feature->name, $component_features) && $view = views_get_view($view_name, TRUE)) {
           foreach (array_keys($view->display) as $display_id) {

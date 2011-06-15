@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_controller_variable.inc,v 1.1.2.3 2010/08/04 14:35:33 yhahn Exp $
 
 /**
  * Variable controller.

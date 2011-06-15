@@ -1,5 +1,5 @@
 <?php
-// $Id: views_bulk_operations.module,v 1.29.2.9.2.153 2010/09/15 17:28:24 kratib Exp $
+// $Id: views_bulk_operations.module,v 1.29.2.9.2.154 2010/10/06 15:34:41 kratib Exp $
 
 /**
  * @file 
@@ -644,6 +644,15 @@ function _views_bulk_operations_queue_process($oid, $row, $operation, $params, $
   module_load_include('inc', 'node', 'node.admin');
 
   $object = call_user_func($object_info['load'], $oid);
+  if (!$object) {
+    watchdog('views bulk operations', 'Skipped %action on @type id %oid.', array(
+      '%action' => $operation['label'],
+      '@type' => t($operation['type']),
+      '%oid' => $oid,
+    ), WATCHDOG_ALERT);
+    return;
+  }
+
   $account = user_load(array('uid' => $uid));
   if (!_views_bulk_operations_object_permission($operation, $object, $object_info, $account)) {
     watchdog('views bulk operations', 'Skipped %action on @type %title due to insufficient permissions.', array(
@@ -680,6 +689,15 @@ function _views_bulk_operations_batch_process($oid, $row, &$context) {
   }
 
   $object = call_user_func($object_info['load'], $oid);
+  if (!$object) {
+    $context['results']['log'][] = t('Skipped %action on @type id %oid.', array(
+      '%action' => $operation['label'],
+      '@type' => t($operation['type']),
+      '%oid' => $oid,  
+    ));
+    continue;
+  }
+
   if (!_views_bulk_operations_object_permission($operation, $object, $object_info)) {
     $context['results']['log'][] = t('Skipped %action on @type %title due to insufficient permissions.', array(
       '%action' => $operation['label'], 
@@ -743,6 +761,15 @@ function _views_bulk_operations_direct_process($view, $operation, $objects, $par
       $oid = $row->{$view->base_field};
       if (isset($object_info['access'])) {
         $object = call_user_func($object_info['load'], $oid);
+        if (!$object) {
+          unset($objects[$num]);
+          $context['results']['log'][] = t('Skipped %action on @type id %oid.', array(
+            '%action' => $operation['label'],
+            '@type' => t($operation['type']),
+            '%oid' => $oid,
+          ));
+          continue;
+        }
         if (!_views_bulk_operations_object_permission($operation, $object, $object_info)) {
           unset($objects[$num]);
           $context['results']['log'][] = t('Skipped %action on @type %title due to insufficient permissions.', array(
@@ -770,6 +797,14 @@ function _views_bulk_operations_direct_process($view, $operation, $objects, $par
   else foreach ($objects as $num => $row) {
     $oid = $row->{$view->base_field};
     $object = call_user_func($object_info['load'], $oid);
+    if (!$object) {
+      $context['results']['log'][] = t('Skipped %action on @type id %oid.', array(
+        '%action' => $operation['label'],
+        '@type' => t($operation['type']),
+        '%oid' => $oid,
+      ));
+      continue;
+    }
     if (!_views_bulk_operations_object_permission($operation, $object, $object_info)) {
       $context['results']['log'][] = t('Skipped %action on @type %title due to insufficient permissions.', array(
         '%action' => $operation['label'], 
@@ -1338,7 +1373,7 @@ function views_bulk_operations_action_form($context) {
     '#type' => 'textarea',
     '#title' => t('View exposed input'),
     '#description' => t('Enter PHP script that will assemble the view exposed input (if the view accepts exposed input).
-                         These input should be of the form: <code>return array(\'input1\' => \'value1\', ...);</code> 
+                         These inputs should be of the form: <code>return array(\'input1\' => \'value1\', ...);</code> 
                          and they should correspond to the query values used on the view URL when exposed filters are applied.
                          The variables <code>&$object</code> and <code>$context</code> are available to this script.
                         '),
@@ -1348,7 +1383,7 @@ function views_bulk_operations_action_form($context) {
     '#type' => 'textarea',
     '#title' => t('View arguments'),
     '#description' => t('Enter PHP script that will assemble the view arguments (if the view accepts arguments).
-                         These input should be of the form: <code>return array(\'value1\', ...);</code> 
+                         These arguments should be of the form: <code>return array(\'value1\', ...);</code> 
                          and they should correspond to the arguments defined in the view.
                          The variables <code>&$object</code> and <code>$context</code> are available to this script.
                         '),

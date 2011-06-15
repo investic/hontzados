@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces_taxonomy.module,v 1.1.2.4.2.4.2.6 2010/08/06 20:23:20 jmiccolis Exp $
 
 /**
  * Implementaton of hook_enable().

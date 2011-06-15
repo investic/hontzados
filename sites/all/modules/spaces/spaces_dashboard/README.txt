@@ -1,4 +1,3 @@
-$Id: README.txt,v 1.1.2.2 2010/01/22 19:20:00 jmiccolis Exp $
 
 Spaces Dashboard 3.x
 --------------------

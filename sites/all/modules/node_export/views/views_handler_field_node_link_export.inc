@@ -1,5 +1,4 @@
 <?php
-// $Id: views_handler_field_node_link_export.inc,v 1.1.2.2.2.5 2010/01/26 03:03:39 danielb Exp $
 
 /**
  * @file
@@ -27,7 +26,7 @@ class views_handler_field_node_link_export extends views_handler_field_node_link
     $node->type = $values->{$this->aliases['type']};
     $node->format = $values->{$this->aliases['format']};
     $node->status = 1; // unpublished nodes ignore access control
-    if (!export_access($node)) {
+    if (!node_export_access($node)) {
       return;
     }
 

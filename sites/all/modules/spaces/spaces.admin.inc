@@ -1,5 +1,4 @@
 <?php
-// $Id: spaces.admin.inc,v 1.1.2.15 2010/08/09 17:48:59 jmiccolis Exp $
 
 /**
  * Spaces features form.

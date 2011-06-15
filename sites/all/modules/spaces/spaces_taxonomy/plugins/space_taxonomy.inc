@@ -1,5 +1,4 @@
 <?php
-// $Id: space_taxonomy.inc,v 1.1.2.3 2010/04/26 19:33:30 yhahn Exp $
 
 /**
  * Taxonomy integration for Spaces. 
