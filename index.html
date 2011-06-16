@@ -8,7 +8,7 @@
   <style type="text/css">
     body {
       margin-top: 1.0em;
-      background-color: #000;
+      background-color: #fff;
       font-family: Helvetica, Arial, FreeSans, san-serif;
       color: #000000;
     }
@@ -45,16 +45,16 @@
     <h1><a href="http://github.com/investic/hontzados">hontzados</a>
       <span class="small">by <a href="http://github.com/investic">investic</a></span></h1>
 
-  <h1 id="manual_de_desarrollador">MANUAL DE DESARROLLADOR</h1>
+<h3 id="manual_de_desarrollador">MANUAL DE DESARROLLADOR</h3>
 
-<h1 id="nota_para_desarrolladores">NOTA PARA DESARROLLADORES</h1>
+<h3 id="nota_para_desarrolladores">NOTA PARA DESARROLLADORES</h3>
 
 <p>El desarrollo interno de Hontza 2.0 se realizará desde github
 https://github.com/investic/hontzados 
 En la medida de nuestras posibilidades se incorporarán esos cambios a otros repositorios como los gestionados por la SPRI
 Una vez publicada la Distribución también abriremos el repositorio en github</p>
 
-<h1 id="dristribucin_hontza_20_para_la_vigilancia_competitiva">Dristribución Hontza 2.0 para la vigilancia competitiva</h1>
+<h3 id="dristribucin_hontza_20_para_la_vigilancia_competitiva">Dristribución Hontza 2.0 para la vigilancia competitiva</h3>
 
 <p>Hontza 2.0 es una distribución de Drupal específica para soportar las funciones de Vigilancia Tecnológica e Inteligencia Competitiva.</p>
 
@@ -70,12 +70,12 @@ Una vez publicada la Distribución también abriremos el repositorio en github</
 
 <p>Hontza también dispone de un sistema de alertas para recibir por correo las informaciones personalizadas de mayor interés.</p>
 
-<h1 id="instalacin">Instalación</h1>
+<h3 id="instalacin">Instalación</h3>
 
 <p>Mirar el fichero INSTALL.txt (en Ingles recomendable)
 Mirar el fichero INSTALL_HONTZA.txt (castellano)</p>
 
-<h1 id="distribucin_de_drupal">Distribución de drupal</h1>
+<h3 id="distribucin_de_drupal">Distribución de drupal</h3>
 
 <p>Para la instalación y puesta en marcha de Hontza 2.0 hemos hecho uso de Drupal como base de desarrollo. La solución usada es lo que la comunidad de drupal denomina Distribución de drupal.</p>
 
@@ -92,11 +92,11 @@ Mirar el fichero INSTALL_HONTZA.txt (castellano)</p>
 
 <p>Mediante estos elementos se de la opción de un sistema de instalación, así como una preconfiguración de los modulos y unos Features (sistema de paquetes de drupal) que con un proceso amigable da como resultado un drupal con un proposito concreto, en este caso una herramienta de trabajo en grupo para la Vigilancia competitiva. Hacemos una relación de los elementos que componen la distribución HONTZA.</p>
 
-<h2 id="drupal_core">Drupal core</h2>
+<h4 id="drupal_core">Drupal core</h4>
 
 <p>Drupal core es la base fundamental de esta distribución, es una copia exacta de la versión oficial de drupal.org. Drupal es un Cms/Framework también se podría decir que es un gestor de contenidos como producto finalizado con las herramientas para poder desarrollar sobre el mismo. En hontza Drupal se usa como base, para la gestión de usuario, creación de contenidos, gestión de roles etc.</p>
 
-<h2 id="mdulos_contribuidos">Módulos Contribuidos</h2>
+<h4 id="mdulos_contribuidos">Módulos Contribuidos</h4>
 
 <p>Drupal tiene una comunidad amplia de desarrolladores que se encarga de ampliar las funcionalidades que vienen el core. La ampliación de estas funcionalidades se hace uso de los Módulos. Drupal core incorpora un gestor de modulo que facilita la activación de los mismos. En estos momentos la comunidad de Drupal tiene mas de 7000 módulos. </p>
 
@@ -169,7 +169,7 @@ Para mas información acerca de estos módulos visite Drupal.org o drupalmodules
 </ul></li>
 </ul>
 
-<h2 id="mdulos_creados_por_investic">Módulos Creados por Investic</h2>
+<h4 id="mdulos_creados_por_investic">Módulos Creados por Investic</h4>
 
 <p>Drupal permite crear desarrollos a medida mediante modulos de la misma manera que lo hace la comunidad con los modulo contribuidos. Para el desarrollo de hontza hemos creado una serie de modulo propios, bien porque las funcionalidades necesarias no estaban en los modulos contribuidos o bien por modificar las funcionalidades de otros modulos. Todo el desarrollo a sido testeado en repetidas ocasiones, pero estos desarrollos son susceptibles de mejora, sobre todo en documentación mejora de los standares de drupal, y en algunos casos optimización. En futuras versiones iremos incorporando estas mejoras.</p>
 
@@ -204,7 +204,7 @@ Para mas información acerca de estos módulos visite Drupal.org o drupalmodules
 </ul></li>
 </ul>
 
-<h2 id="features">Features</h2>
+<h4 id="features">Features</h4>
 
 <p>Features es el forma de empaquetar las funcionalidad o conjunto de elementos en drupal, es un modulo de reciente creación y que rompe con la problematica de tener tanto el conteniendo como las configuraciones en la bbdd. En hontza se han creado un conjunto amplio de Features incluidos en el directorio hontza<em>features y que cada uno de ellos son llamados con las iniciales hz</em> Se hace una relación de los distintos features.</p>
 
@@ -221,7 +221,7 @@ Para mas información acerca de estos módulos visite Drupal.org o drupalmodules
 
 <p>La estructura de contenidos así como el orden lo da el modulo context, en general cada uno de estos &#8220;paquetes&#8221; tiene uno u otro context asociados, así como sus tipos de contenidos, views, permisos y variables de sistemas gestionadas por strongarm</p>
 
-<h2 id="perfil_de_instalacin">Perfil de instalación</h2>
+<h4 id="perfil_de_instalacin">Perfil de instalación</h4>
 
 <p>Drupal provee de un sistema para la creación de perfiles de instalación, estos perfiles son instrucciones que se van ejecutando conforme avanza la instalación, en el caso de Hontza 2.0 las fases son estas</p>
 
@@ -237,7 +237,7 @@ Para mas información acerca de estos módulos visite Drupal.org o drupalmodules
 <li>Otros</li>
 </ul>
 
-<h1 id="configuracin_bsica_de_hontza">Configuración básica de Hontza</h1>
+<h3 id="configuracin_bsica_de_hontza">Configuración básica de Hontza</h3>
 
 <p>Hontza provee de un panel de gestión que permite acceder a todas sus funcionalidad, desde /gestion (ejem http://sitioejemplo.com/gestion) se administra y preparar la herramienta para su propósito. 
 Una vez realizada la instalación mediante el perfil de instalación, un de los pasos es la creación del usuario &#8220;administrado&#8221; este usuario tiene todos los permisos, no solo los necesarios para la gestión de hontza como herramienta, también la gestión del Drupal. Hacer un uso indebido de este usuario, puede hacer que la aplicación funcione incorrectamente. 
