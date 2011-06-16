@@ -109,7 +109,7 @@ function hontza_feature_modules() {
 function hontza_profile_task_list() {
   global $conf;
   $conf['site_name'] = 'Hontza vigilancia competitiva';
-  $conf['site_footer'] = 'Hontza by <a href="http://www.investic.net">Investic corp</a>';
+  $conf['site_footer'] = 'Hontza by <a href="http://www.investic.net">Investic  s.coop</a>';
   
   $tasks['hz-configure-batch'] = st('Configure Hontza');
   if (_hontza_language_selected()) {
@@ -267,8 +267,8 @@ function _hontza_base_settings() {
   $theme_settings['toggle_node_info_page'] = FALSE;
   $theme_settings['site_slogan'] = FALSE;
   //$theme_settings['site_name'] = FALSE;
-  $theme_settings['default_logo'] = FALSE;
-  //$theme_settings['logo_path'] = 'sites/default/files/logo.png';
+  $theme_settings['default_logo'] = true;
+  $theme_settings['logo_path'] = 'sites/all/themes/sky/images/logo.png';
   variable_set('theme_settings', $theme_settings);    
   
   // Basic Drupal settings.

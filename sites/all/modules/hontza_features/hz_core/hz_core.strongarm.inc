@@ -802,7 +802,7 @@ This message was sent by an administrator in the \'@group\' group at @site. To v
     'toggle_primary_links' => 1,
     'toggle_secondary_links' => 1,
     'default_logo' => 0,
-    'logo_path' => 'sites/default/files/logo.png',
+    'logo_path' => 'sites/all/themes/sky/images/logo.png',
     'logo_upload' => '',
     'default_favicon' => 1,
     'favicon_path' => '',
