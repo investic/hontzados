@@ -44,29 +44,29 @@ stylesheets[all][] = system-menus.css
 ; -----------------------------------------------------------------------------
 scripts[] = scripts/hoverIntent.js
 scripts[] = scripts/superfish.js
-scripts[] = scripts/sky.js
+scripts[] = scripts/buho.js
 
 ; THEME SETTINGS
 ; -----------------------------------------------------------------------------
-settings[sky_background] = ''
-settings[sky_background_header] = ''
-settings[sky_breadcrumbs] = 0
-settings[sky_breadcrumbs_sep] = &raquo;
-settings[sky_links] = ''
-settings[sky_links_active] = ''
-settings[sky_links_hover] =  ''
-settings[sky_links_visited] = ''
-settings[sky_font] = lucida
-settings[sky_font_headings] = lucida
-settings[sky_font_size] = 12px
-settings[sky_header_height] = 100px
-settings[sky_layout] = fixed_960
-settings[sky_custom_layout] = ''
-settings[sky_nav_alignment] = center
-settings[sky_sub_navigation_width] = 15em
+settings[buho_background] = ''
+settings[buho_background_header] = ''
+settings[buho_breadcrumbs] = 0
+settings[buho_breadcrumbs_sep] = &raquo;
+settings[buho_links] = ''
+settings[buho_links_active] = ''
+settings[buho_links_hover] =  ''
+settings[buho_links_visited] = ''
+settings[buho_font] = lucida
+settings[buho_font_headings] = lucida
+settings[buho_font_size] = 12px
+settings[buho_header_height] = 100px
+settings[buho_layout] = fixed_960
+settings[buho_custom_layout] = ''
+settings[buho_nav_alignment] = center
+settings[buho_sub_navigation_width] = 15em
 ; Information added by drupal.org packaging script on 2010-01-25
 version = "6.x-3.10"
 core = "6.x"
-project = "sky"
+project = "buho"
 datestamp = "1264385706"
 

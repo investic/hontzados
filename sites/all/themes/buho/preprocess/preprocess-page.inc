@@ -29,7 +29,7 @@ if ($vars['primary_links']) {
   $tree = str_replace(' class="menu"', '', $tree);
 
   // Find out how the navigation is aligned, and prepard the output
-  $navigation_alignment = theme_get_setting('sky_nav_alignment');
+  $navigation_alignment = theme_get_setting('buho_nav_alignment');
   $vars['primary_links'] = '<del class="wrap-'. $navigation_alignment .'">'. $tree .'</del>';
 }
 

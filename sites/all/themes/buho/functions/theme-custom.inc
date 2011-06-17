@@ -13,7 +13,7 @@
  * @param $attributes
  * @return string
  */
-function sky_render_attributes($attributes) {
+function buho_render_attributes($attributes) {
   if ($attributes) {
     $items = array();
     foreach ($attributes as $attribute => $data) {
@@ -31,7 +31,7 @@ function sky_render_attributes($attributes) {
  * Conditional Stylesheets
  * Loads alternate stylesheets for Internet Explorer
  */
-function sky_conditional_stylesheets() {
+function buho_conditional_stylesheets() {
   // Targets IE 6 and under
   $output = "\n".'<!--[if lt IE 7.0]><link rel="stylesheet" href="'. base_path() . path_to_theme() .'/css/ie-6.css" type="text/css" media="all" charset="utf-8" /><![endif]-->'."\n";
   // Targets IE 7
@@ -43,7 +43,7 @@ function sky_conditional_stylesheets() {
  * CSS Filter
  * Borrowed from Studio ;)
  */
-function sky_id_safe($string) {
+function buho_id_safe($string) {
   // Replace with dashes anything that isn't A-Z, numbers, dashes, or underscores.
   $string = strtolower(preg_replace('/[^a-zA-Z0-9-]+/', '-', $string));
   // If the first character is not a-z, add 'n' in front.

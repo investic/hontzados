@@ -1,6 +1,6 @@
 // $Id
 
-Drupal.behaviors.skyBehavior = function(context) {
+Drupal.behaviors.buhoBehavior = function(context) {
   /**
    * Superfish Menus
    * http://users.tpg.com.au/j_birch/plugins/superfish/

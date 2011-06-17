@@ -4,35 +4,35 @@
 /**
  * @file
  * Theme function overrides
- * @see sky_theme(), template.php
+ * @see buho_theme(), template.php
  */
 
 /**
- * @see theme_breacrumb(), sky_theme()
+ * @see theme_breacrumb(), buho_theme()
  * http://api.drupal.org/api/function/theme_breadcrumb/6
  *
  * Added: Support for user to select a custom separator in theme settings
  * Added: id attribute: breadcrumbs, class attribute: clearfix
  * Removed: Class attribute: breadcrumb
  */
-function sky_breadcrumb($breadcrumb) {
-  if (!empty($breadcrumb) && (theme_get_setting('sky_breadcrumbs') == 0)) {
+function buho_breadcrumb($breadcrumb) {
+  if (!empty($breadcrumb) && (theme_get_setting('buho_breadcrumbs') == 0)) {
     // Use separator defined by theme settings
-    $sky_separator = theme_get_setting('sky_breadcrumbs_sep');
+    $buho_separator = theme_get_setting('buho_breadcrumbs_sep');
 
-    $separator =  $sky_separator ? $sky_separator : '&raquo;';
+    $separator =  $buho_separator ? $buho_separator : '&raquo;';
     return '<div id="breadcrumbs" class="clearfix">'. implode(' '. $separator .' ', $breadcrumb) .'</div>';
   }
 }
 
 /**
- * @see theme_feed_icon(), sky_theme()
+ * @see theme_feed_icon(), buho_theme()
  * http://api.drupal.org/api/function/theme_feed_icon/6
  *
  * Added: A different default title when one is not provided.
  * Changed: The location of the feed icon image to one provided by the theme.
  */
-function sky_feed_icon($url, $title) {
+function buho_feed_icon($url, $title) {
   if (!$title) {
     $title = t('Subscribe to this feed');
   }
@@ -45,14 +45,14 @@ function sky_feed_icon($url, $title) {
 }
 
 /**
- * @see theme_fieldset(), sky_theme()
+ * @see theme_fieldset(), buho_theme()
  * http://api.drupal.org/api/function/theme_fieldset/6
  *
  * Added: <div class="fieldset-wrapper"> Only collapsible fieldsets have it.
  * Applying padding and background colors to it as opposed to the fieldset
  * itself allows for better styling.
  */
-function sky_fieldset($element) {
+function buho_fieldset($element) {
   if (!empty($element['#collapsible'])) {
     drupal_add_js('misc/collapse.js');
 
@@ -70,13 +70,13 @@ function sky_fieldset($element) {
 }
 
  /**
- * @see theme_menu_local_tasks(), sky_theme()
+ * @see theme_menu_local_tasks(), buho_theme()
  * http://api.drupal.org/api/function/theme_menu_local_tasks/6
  *
  * Added: A wrapper <div>'s with class attributes: clearfix class, a helper class
  * indicating what's inside, and id attributes.
  */
-function sky_menu_local_tasks() {
+function buho_menu_local_tasks() {
   $primary = menu_primary_local_tasks();
   $secondary = menu_secondary_local_tasks();
 
@@ -108,14 +108,14 @@ function sky_menu_local_tasks() {
 }
 
 /**
- * @see theme_pager(), sky_theme()
+ * @see theme_pager(), buho_theme()
  * http://api.drupal.org/api/function/theme_pager/6
  *
  * Added: 2 wrapper <div>'s
  * Changed: Wrapped $pager_current, and &hellip;'s in a <span> tag.
  * Removed: .pager-item, .pager-next, .pager-previous classes
  */
-function sky_pager($tags = array(), $limit = 10, $element = 0, $parameters = array(), $quantity = 9) {
+function buho_pager($tags = array(), $limit = 10, $element = 0, $parameters = array(), $quantity = 9) {
   global $pager_page_array, $pager_total;
 
   // Calculate various markers within this pager piece:
@@ -222,13 +222,13 @@ function sky_pager($tags = array(), $limit = 10, $element = 0, $parameters = arr
 }
 
 /**
- * @see theme_table(), sky_theme()
+ * @see theme_table(), buho_theme()
  * http://api.drupal.org/api/function/theme_table/6
  *
  * Added: A wrapper <div> with to class attributes: table-wrapper, clearfix to
  * deal with overflow and word-wrap and word-break issues.
  */
-function sky_table($header, $rows, $attributes = array(), $caption = NULL) {
+function buho_table($header, $rows, $attributes = array(), $caption = NULL) {
 
   // Add sticky headers, if applicable.
   if (count($header)) {
@@ -313,13 +313,13 @@ function sky_table($header, $rows, $attributes = array(), $caption = NULL) {
 }
 
 /**
- * @see theme_status_messages(), sky_theme()
+ * @see theme_status_messages(), buho_theme()
  * http://api.drupal.org/api/function/theme_status_messages/6
  *
  * Added: A wrapper <div> with to class attributes: table-wrapper, clearfix to
  * deal with overflow and word-wrap and word-break issues.
  */
-function sky_status_messages($display = NULL) {
+function buho_status_messages($display = NULL) {
   $output = '';
   foreach (drupal_get_messages($display) as $type => $messages) {
     $output .= "<div class=\"messages $type\">\n";
@@ -342,7 +342,7 @@ function sky_status_messages($display = NULL) {
   return $output;
 }
 
-function sky_status_report($requirements) {
+function buho_status_report($requirements) {
   $i = 0;
   $output = '<table class="system-status-report">';
   foreach ($requirements as $requirement) {
@@ -378,7 +378,7 @@ function sky_status_report($requirements) {
  * Added: A css class indicating the type of element it contains, i.e. .form-item-textfield
  * Added: A css class indicating of the element is required, i.e. .form-item-required
  */
-function sky_form_element($element, $value) {
+function buho_form_element($element, $value) {
   // This is also used in the installer, pre-database setup.
   $t = get_t();
 
@@ -426,6 +426,6 @@ function sky_form_element($element, $value) {
  * http://api.drupal.org/api/function/theme_more_link/6
  * Added: <span> tag for icon
  */
-function sky_more_link($url, $title) {
+function buho_more_link($url, $title) {
   return '<div class="more-link"> <span class="icon">&nbsp;</span> '. t('<a href="@link" title="@title">more</a>', array('@link' => check_url($url), '@title' => $title)) .'</div>';
 }

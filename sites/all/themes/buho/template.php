@@ -12,7 +12,7 @@ require_once('theme-settings.php');
  * Add Custom Generated CSS File
  * This file is generated each time the theme settings page is loaded.
  */
-$custom_css = file_directory_path() .'/sky/custom.css';
+$custom_css = file_directory_path() .'/buho/custom.css';
 if (file_exists($custom_css)) {
   drupal_add_css($custom_css, 'theme', 'all', TRUE);
 }
@@ -21,7 +21,7 @@ if (file_exists($custom_css)) {
  * Implementation of hook_theme().
  * This function provides a one-stop reference for all
  */
-function sky_theme(&$existing, $type, $theme, $path) {
+function buho_theme(&$existing, $type, $theme, $path) {
   return array(
     'breadcrumb' => array(
       'arguments' => array('breadcrumb' => array()),
@@ -80,7 +80,7 @@ function sky_theme(&$existing, $type, $theme, $path) {
  * @param $hook
  * @return Array
  */
-function sky_preprocess(&$vars, $hook) {
+function buho_preprocess(&$vars, $hook) {
 
   // Only add the admin.css file to administrative pages
   if (arg(0) == 'admin') {
@@ -91,7 +91,7 @@ function sky_preprocess(&$vars, $hook) {
   * This function checks to see if a hook has a preprocess file associated with
   * it, and if so, loads it.
   */
-  if (is_file(drupal_get_path('theme', 'sky') .'/preprocess/preprocess-'. str_replace('_', '-', $hook) .'.inc')) {
+  if (is_file(drupal_get_path('theme', 'buho') .'/preprocess/preprocess-'. str_replace('_', '-', $hook) .'.inc')) {
     include('preprocess/preprocess-'. str_replace('_', '-', $hook) .'.inc');
   }
 }
@@ -100,7 +100,7 @@ function sky_preprocess(&$vars, $hook) {
 /*Eliminar el node title en determinados tipos de contenidos*/
 
 
-function sky_preprocess_page(&$vars) {
+function buho_preprocess_page(&$vars) {
 
   /*itles are ignored by content type when they are not desired in the design.*/
   $vars['original_title'] = $vars['title'];

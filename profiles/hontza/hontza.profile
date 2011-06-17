@@ -72,7 +72,7 @@ function hontza_profile_modules() {
 } 
 
 /**
- * Features module and OpenPublish features
+ * Features module and Hontza features
  */
 function hontza_feature_modules() {
   $features = array(
@@ -146,7 +146,6 @@ function hontza_profile_tasks(&$task, $url) {
     $batch['operations'][] = array('_hontza_set_permissions', array());      
     $batch['operations'][] = array('_hontza_initialize_settings', array());      
     $batch['operations'][] = array('_hontza_placeholder_content', array());      
-    //$batch['operations'][] = array('_hontza_faq_content', array());      
     $batch['operations'][] = array('_hontza_set_views', array());      
     $batch['operations'][] = array('_hontza_install_menus', array());      
     $batch['operations'][] = array('_hontza_install_taxonomy', array());      
@@ -199,10 +198,10 @@ function hontza_profile_tasks(&$task, $url) {
 function _hontza_import_translations_finished($success, $results) {
   _hontza_log(t('Translations have been imported.'));
   /**
-   * Necessary as the openpublish_theme's status gets reset to 0
+   * Necessary as the hontza_theme's status gets reset to 0
    * by a part of the automated batch translation in l10n_update
    */
-  install_default_theme('sky');
+  install_default_theme('buho');
   variable_set('install_task', 'profile-finished');
 }
 
@@ -211,6 +210,7 @@ function _hontza_import_translations_finished($success, $results) {
  */
 function _hontza_configure_finished($success, $results) {
   _hontza_log(t('Hontza has been installed.'));
+  cache_clear_all();
   if (_hontza_language_selected()) {
     // Other language, different part of the process
     variable_set('install_task', 'hz-translation-import');
@@ -259,16 +259,16 @@ function _hontza_base_settings() {
   variable_set('comment_page', COMMENT_NODE_DISABLED);
 
   // Theme related.  
-  install_default_theme('sky');
-  install_admin_theme('sky');	
+  install_default_theme('buho');
+  install_admin_theme('buho');	
   variable_set('node_admin_theme', TRUE);    
   
   $theme_settings = variable_get('theme_settings', array());
   $theme_settings['toggle_node_info_page'] = FALSE;
   $theme_settings['site_slogan'] = FALSE;
   //$theme_settings['site_name'] = FALSE;
-  $theme_settings['default_logo'] = true;
-  $theme_settings['logo_path'] = 'sites/all/themes/sky/images/logo.png';
+//  $theme_settings['default_logo'] = true;
+//  $theme_settings['logo_path'] = 'sites/all/themes/hontza/images/logo.png';
   variable_set('theme_settings', $theme_settings);    
   
   // Basic Drupal settings.
@@ -455,7 +455,6 @@ function _hontza_install_menus(&$context) {
  * Setup custom vocav and term
  */
 function _hontza_install_taxonomy(&$context){
-  cache_clear_all();
   menu_rebuild();
   $fuentes = array(
    0 => array(
@@ -681,6 +680,11 @@ function _hontza_install_taxonomy(&$context){
 	//Eliminar vocabularios creados
 	taxonomy_del_vocabulary(2);
 	taxonomy_del_vocabulary(5);
+  //TODO Problem cache
+  ctools_flush_caches(); 
+  cache_clear_all('*', 'cache', TRUE);  
+  cache_clear_all('*', 'cache_content', TRUE);
+  cache_clear_all();
 }
 
 
@@ -689,13 +693,12 @@ function _hontza_install_taxonomy(&$context){
  */
 function _hontza_setup_blocks(&$context) {  
   global $theme_key, $base_url; 
-  cache_clear_all();
 
   // Ensures that $theme_key gets set for new block creation
-  $theme_key = 'sky';
+  $theme_key = 'hontza';
 
   // install the demo ad blocks  
-  $ad_base = $base_url . '/sites/all/themes/sky';
+  $ad_base = $base_url . '/sites/all/themes/buho';
   $b2 = install_create_custom_block('<li ><a href="/user">Inicio de sesión / Login</a></li>', 'Menu usuario anonimo', FILTER_HTML_ESCAPE );
 
   // Get these new boxes in blocks table
@@ -707,9 +710,9 @@ function _hontza_setup_blocks(&$context) {
             '<none>', 'menu', 'primary-links');
 
 
-  install_disable_block('user', '0', 'sky');
-  install_disable_block('user', '1', 'sky');
-  install_disable_block('system', '0', 'sky');
+  install_disable_block('user', '0', 'buho');
+  install_disable_block('user', '1', 'buho');
+  install_disable_block('system', '0', 'buho');
   
   $msg = st('Configured Blocks');
   _hontza_log($msg);
@@ -752,6 +755,7 @@ function _hontza_cleanup() {
   ctools_flush_caches(); 
   cache_clear_all('*', 'cache', TRUE);  
   cache_clear_all('*', 'cache_content', TRUE);
+  cache_clear_all();
 }
 
 /**
