@@ -706,13 +706,13 @@ function _hontza_setup_blocks(&$context) {
 
   //-- Disable titles for all views-driven blocks, by default, to avoid double-titling:
   
-  db_query("UPDATE {blocks} SET title = '%s' WHERE module = '%s' AND delta= '%s'", 
-            '<none>', 'menu', 'primary-links');
 
 
   install_disable_block('user', '0', 'buho');
   install_disable_block('user', '1', 'buho');
   install_disable_block('system', '0', 'buho');
+  
+  db_query("UPDATE {blocks} SET title = '%s' WHERE module = '%s' AND delta= '%s'", '<none>', 'menu', 'primary-links');
   
   $msg = st('Configured Blocks');
   _hontza_log($msg);

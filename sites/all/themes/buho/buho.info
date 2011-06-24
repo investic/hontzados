@@ -1,4 +1,4 @@
-name = Sky
+name = Buho
 description = Sky is a center aligned, fixed or fluid theme that supports either all sidebar combinations (left, right, both, none)
 core = 6.x
 engine = phptemplate

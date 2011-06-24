@@ -1,8 +1,12 @@
-/* $Id$ */
-/**
- * Sky
- * http://drupal.org/project/sky
-/*
+
+/*Buho  theme by Investic based in Sky theme
+                  , _ ,
+                 ( o o )
+                /'` ' `'\
+                |'''''''|
+                |\\'''//|
+                  """ 
+*/
 /* @group Layout */
 
 
@@ -63,7 +67,7 @@ min-height: 90px;
 }
 #header #logo img {
   margin: 0;
-  padding: 0;
+  padding: 1em;
   height: 50px;
 }
 #header #site-slogan {
@@ -2336,6 +2340,9 @@ margin-left: 10px;
   margin-top:25px;
 }
 
+#block-menu-primary-links h3.title {
+  display: none;
+}
 
 #block-views-og-home-areadebate-block-1 .view-display-id-attachment-1 .view-header {
   font-size: 14px;
@@ -2594,4 +2601,5 @@ background: url("images/user.png") center left no-repeat;
 padding-left: 18px !important;
 
 }
+
 
